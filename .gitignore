@@ -1,0 +1,10 @@
+.env.local
+.env
+node_modules/
+.next/
+storage/
+watched-documents/
+*.log
+service-account.json
+.DS_Store
+prisma/migrations/

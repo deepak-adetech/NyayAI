@@ -1,0 +1,637 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  LAWYER
+  CLIENT
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+  PAYMENT_FAILED
+}
+
+enum PlanTier {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum CaseStatus {
+  ACTIVE
+  DISPOSED
+  ARCHIVED
+  TRANSFERRED
+  STAYED
+}
+
+enum CaseType {
+  CRIMINAL
+  CIVIL
+  FAMILY
+  CONSUMER
+  LABOUR
+  TAX
+  WRIT
+  ARBITRATION
+  OTHER
+}
+
+enum DocumentType {
+  FIR
+  CHARGESHEET
+  JUDGMENT
+  ORDER
+  PETITION
+  BAIL_APPLICATION
+  WRITTEN_STATEMENT
+  PLAINT
+  REPLY
+  AFFIDAVIT
+  VAKALATNAMA
+  AGREEMENT
+  NOTICE
+  CAUSE_LIST
+  EVIDENCE
+  CLIENT_DOCUMENT
+  COURT_EMAIL
+  OTHER
+}
+
+enum HearingStatus {
+  SCHEDULED
+  COMPLETED
+  ADJOURNED
+  CANCELLED
+}
+
+enum ReminderChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum InboundEmailStatus {
+  RECEIVED
+  PARSING
+  PARSED
+  MATCHED_TO_CASE
+  UNMATCHED
+  FAILED
+}
+
+// ============================================================
+// USER & AUTH TABLES
+// ============================================================
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  emailVerified    DateTime?
+  phone            String?  @unique
+  phoneVerified    Boolean  @default(false)
+  passwordHash     String
+  name             String
+  role             UserRole @default(LAWYER)
+  avatarUrl        String?
+  barCouncilNumber String?
+  barCouncilState  String?
+  firmName         String?
+  address          String?
+  city             String?
+  state            String?
+  pincode          String?
+  timezone         String   @default("Asia/Kolkata")
+  isActive         Boolean  @default(true)
+  lastLoginAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subscription   Subscription?
+  cases          Case[]         @relation("LawyerCases")
+  clientCases    CaseClient[]
+  documents      Document[]
+  hearings       Hearing[]
+  reminders      Reminder[]
+  auditLogs      AuditLog[]
+  invoices       Invoice[]
+  inboundEmails  InboundEmail[]
+  sessions       Session[]
+  accounts       Account[]
+  invitedClients ClientInvite[]
+  localSyncFolders LocalSyncFolder[]
+  agentTokens      AgentToken[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  type       String   @default("email_verification") // "email_verification" | "password_reset"
+
+  @@unique([identifier, token])
+}
+
+// ============================================================
+// SUBSCRIPTION & BILLING
+// ============================================================
+
+model Plan {
+  id                     String   @id @default(uuid())
+  tier                   PlanTier @unique
+  name                   String
+  description            String?
+  priceMonthlyPaise      Int
+  priceYearlyPaise       Int?
+  maxCases               Int
+  maxDocumentsPerCase    Int      @default(100)
+  maxUsers               Int      @default(1)
+  hasClientPortal        Boolean  @default(false)
+  hasWordAddin           Boolean  @default(false)
+  hasAdvancedAI          Boolean  @default(false)
+  hasPrioritySupport     Boolean  @default(false)
+  razorpayPlanIdMonthly  String?
+  razorpayPlanIdYearly   String?
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                     String             @id @default(uuid())
+  userId                 String             @unique
+  planId                 String
+  status                 SubscriptionStatus @default(TRIAL)
+  razorpaySubscriptionId String?
+  razorpayCustomerId     String?
+  billingCycle           String             @default("monthly")
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  trialEndsAt            DateTime?
+  cancelledAt            DateTime?
+  pausedAt               DateTime?
+  failedPaymentCount     Int                @default(0)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan     Plan      @relation(fields: [planId], references: [id])
+  payments Payment[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([razorpaySubscriptionId])
+}
+
+model Payment {
+  id                 String    @id @default(uuid())
+  subscriptionId     String
+  razorpayPaymentId  String?   @unique
+  razorpayOrderId    String?
+  razorpaySignature  String?
+  amountPaise        Int
+  currency           String    @default("INR")
+  status             String
+  method             String?
+  invoiceId          String?
+  failureReason      String?
+  paidAt             DateTime?
+  createdAt          DateTime  @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([subscriptionId])
+  @@index([razorpayPaymentId])
+}
+
+// ============================================================
+// CASE MANAGEMENT
+// ============================================================
+
+model Case {
+  id                    String     @id @default(uuid())
+  lawyerId              String
+  title                 String
+  caseNumber            String?
+  cnrNumber             String?    @unique
+  firNumber             String?
+  policeStation         String?
+  caseType              CaseType   @default(CRIMINAL)
+  status                CaseStatus @default(ACTIVE)
+  courtName             String?
+  courtComplex          String?
+  courtDistrict         String?
+  courtState            String?
+  benchJudge            String?
+  petitionerNames       String[]
+  respondentNames       String[]
+  petitionerAdvocates   String[]
+  respondentAdvocates   String[]
+  bnsSections           String[]
+  ipcSections           String[]
+  otherSections         String[]
+  filingDate            DateTime?
+  nextHearingDate       DateTime?
+  lastHearingDate       DateTime?
+  disposalDate          DateTime?
+  aiSummary             String?
+  aiSuggestedSections   String[]
+  aiRiskAssessment      String?
+  notes                 String?
+  tags                  String[]
+  priority              Int        @default(0)
+  ecourtsLastSync       DateTime?
+  ecourtsData           String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  lawyer        User           @relation("LawyerCases", fields: [lawyerId], references: [id])
+  clients       CaseClient[]
+  documents     Document[]
+  hearings      Hearing[]
+  reminders     Reminder[]
+  inboundEmails InboundEmail[]
+  timeline      CaseTimeline[]
+  invoices      Invoice[]
+
+  @@index([lawyerId])
+  @@index([caseNumber])
+  @@index([cnrNumber])
+  @@index([status])
+  @@index([nextHearingDate])
+  @@index([lawyerId, status])
+}
+
+model CaseClient {
+  id       String   @id @default(uuid())
+  caseId   String
+  clientId String
+  role     String   @default("client")
+  addedAt  DateTime @default(now())
+
+  case   Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  client User @relation(fields: [clientId], references: [id])
+
+  @@unique([caseId, clientId])
+  @@index([clientId])
+}
+
+model ClientInvite {
+  id        String   @id @default(uuid())
+  lawyerId  String
+  email     String
+  phone     String?
+  name      String
+  caseId    String
+  token     String   @unique @default(uuid())
+  accepted  Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  lawyer User @relation(fields: [lawyerId], references: [id])
+
+  @@index([token])
+  @@index([email])
+}
+
+// ============================================================
+// DOCUMENTS
+// ============================================================
+
+model Document {
+  id                 String       @id @default(uuid())
+  caseId             String
+  uploadedById       String
+  type               DocumentType @default(OTHER)
+  title              String
+  description        String?
+  fileName           String
+  fileSize           Int
+  mimeType           String
+  // For local storage: file path. For S3: object key
+  storagePath        String
+  storageBucket      String       @default("local")
+  ocrStatus          String?      @default("pending")
+  ocrText            String?
+  ocrLanguage        String?
+  ocrConfidence      Float?
+  aiSummary          String?
+  extractedEntities  Json?
+  extractedSections  String[]
+  isFromEmail        Boolean      @default(false)
+  inboundEmailId     String?
+  // File sync metadata
+  localFilePath      String?      // Original local path if from file sync
+  syncedAt           DateTime?    // When it was synced
+  checksum           String?      // For deduplication
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  case       Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@index([caseId])
+  @@index([type])
+  @@index([ocrStatus])
+  @@index([checksum])
+}
+
+// ============================================================
+// HEARINGS
+// ============================================================
+
+model Hearing {
+  id           String        @id @default(uuid())
+  caseId       String
+  lawyerId     String
+  hearingDate  DateTime
+  hearingTime  String?
+  courtRoom    String?
+  court        String?       // Short court name (used by eCourts sync)
+  purpose      String?
+  status       HearingStatus @default(SCHEDULED)
+  judge        String?
+  boardNumber  Int?
+  orderSummary String?
+  nextDate     DateTime?
+  aiNotes      String?
+  reminderSent Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  case      Case       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  lawyer    User       @relation(fields: [lawyerId], references: [id])
+  reminders Reminder[]
+
+  @@unique([caseId, hearingDate])
+  @@index([caseId])
+  @@index([hearingDate])
+  @@index([lawyerId, hearingDate])
+  @@index([status])
+  @@index([reminderSent, hearingDate])
+}
+
+// ============================================================
+// REMINDERS
+// ============================================================
+
+model Reminder {
+  id            String          @id @default(uuid())
+  userId        String
+  caseId        String?
+  hearingId     String?
+  channel       ReminderChannel
+  status        ReminderStatus  @default(PENDING)
+  scheduledFor  DateTime
+  sentAt        DateTime?
+  subject       String
+  body          String
+  failureReason String?
+  retryCount    Int             @default(0)
+  maxRetries    Int             @default(3)
+  createdAt     DateTime        @default(now())
+
+  user    User     @relation(fields: [userId], references: [id])
+  case    Case?    @relation(fields: [caseId], references: [id])
+  hearing Hearing? @relation(fields: [hearingId], references: [id])
+
+  @@index([userId])
+  @@index([scheduledFor])
+  @@index([status])
+  @@index([status, scheduledFor])
+}
+
+// ============================================================
+// INBOUND EMAIL
+// ============================================================
+
+model InboundEmail {
+  id                    String             @id @default(uuid())
+  lawyerId              String
+  caseId                String?
+  fromAddress           String
+  toAddress             String
+  subject               String
+  bodyText              String?
+  bodyHtml              String?
+  receivedAt            DateTime
+  rawEmailPath          String?
+  status                InboundEmailStatus @default(RECEIVED)
+  extractedCaseNumber   String?
+  extractedHearingDate  DateTime?
+  extractedCourtName    String?
+  extractedSections     String[]
+  attachmentCount       Int                @default(0)
+  aiClassification      String?
+  aiSummary             String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  lawyer User  @relation(fields: [lawyerId], references: [id])
+  case   Case? @relation(fields: [caseId], references: [id])
+
+  @@index([lawyerId])
+  @@index([caseId])
+  @@index([status])
+}
+
+// ============================================================
+// LEGAL KNOWLEDGE BASE
+// ============================================================
+
+model LegalSection {
+  id              String  @id @default(uuid())
+  law             String
+  sectionNumber   String
+  title           String
+  fullText        String
+  chapter         String?
+  punishment      String?
+  minSentence     String?
+  maxSentence     String?
+  fineAmount      String?
+  isBailable      Boolean?
+  isCognizable    Boolean?
+  isCompoundable  Boolean?
+  isNonBailable   Boolean?
+  mappedToLaw     String?
+  mappedToSection String?
+  keywords        String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([law, sectionNumber])
+  @@index([law])
+  @@index([sectionNumber])
+  @@index([isBailable])
+}
+
+// ============================================================
+// CASE TIMELINE
+// ============================================================
+
+model CaseTimeline {
+  id          String   @id @default(uuid())
+  caseId      String
+  eventType   String
+  title       String
+  description String?
+  metadata    Json?
+  eventDate   DateTime
+  createdAt   DateTime @default(now())
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@index([eventDate])
+}
+
+// ============================================================
+// INVOICING
+// ============================================================
+
+model Invoice {
+  id            String    @id @default(uuid())
+  lawyerId      String
+  caseId        String?
+  clientName    String
+  clientEmail   String?
+  invoiceNumber String    @unique
+  description   String
+  amountPaise   Int
+  taxPaise      Int       @default(0)
+  totalPaise    Int
+  status        String    @default("draft")
+  dueDate       DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  lawyer User  @relation(fields: [lawyerId], references: [id])
+  case   Case? @relation(fields: [caseId], references: [id])
+
+  @@index([lawyerId])
+  @@index([status])
+}
+
+// ============================================================
+// AUDIT LOG
+// ============================================================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  action     String
+  resource   String?
+  resourceId String?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ============================================================
+// LOCAL FILE SYNC
+// ============================================================
+
+model LocalSyncFolder {
+  id          String   @id @default(uuid())
+  lawyerId    String
+  folderPath  String
+  isActive    Boolean  @default(true)
+  lastSyncAt  DateTime?
+  syncCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lawyer User @relation(fields: [lawyerId], references: [id])
+
+  @@unique([lawyerId, folderPath])
+  @@index([lawyerId])
+}
+
+// ============================================================
+// DESKTOP AGENT TOKENS
+// ============================================================
+
+model AgentToken {
+  id          String    @id @default(uuid())
+  userId      String
+  deviceName  String    @default("default")
+  tokenHash   String    @unique   // SHA-256 hash of the actual token
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceName])
+  @@index([tokenHash])
+  @@index([userId])
+}

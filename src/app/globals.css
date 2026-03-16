@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 215 28% 12%;       /* deep navy-black #1f2937 */
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 12%;
+    --primary: 213 51% 24%;          /* deep navy blue #1e3a5f */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 96%;        /* very light blue-grey */
+    --secondary-foreground: 215 28% 12%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 213 35% 92%;           /* light blue tint */
+    --accent-foreground: 213 51% 24%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 213 51% 24%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 215 28% 9%;
+    --foreground: 210 20% 96%;
+    --card: 215 28% 12%;
+    --card-foreground: 210 20% 96%;
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 213 51% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 28% 16%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 215 28% 16%;
+    --muted-foreground: 215 16% 65%;
+    --accent: 215 28% 16%;
+    --accent-foreground: 210 20% 96%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 96%;
+    --border: 215 28% 18%;
+    --input: 215 28% 18%;
+    --ring: 213 51% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  }
+}
+
+/* Legal document typography */
+.legal-text {
+  font-family: "Times New Roman", Times, serif;
+  line-height: 1.8;
+}
+
+/* Hindi/Devanagari script support */
+.devanagari {
+  font-family: "Noto Sans Devanagari", "Mangal", sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground rounded-full opacity-50;
+}
