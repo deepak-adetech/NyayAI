@@ -1,0 +1,31 @@
+services:
+  nyayasahayak:
+    image: nyayasahayak:latest
+    container_name: nyayasahayak
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - nyaya_storage:/app/storage
+    networks:
+      - n8n_default
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nyayasahayak.rule=Host(`case.ade-technologies.com`)"
+      - "traefik.http.routers.nyayasahayak.tls=true"
+      - "traefik.http.routers.nyayasahayak.entrypoints=web,websecure"
+      - "traefik.http.routers.nyayasahayak.tls.certresolver=myhttpchallenge"
+      - "traefik.http.services.nyayasahayak.loadbalancer.server.port=3000"
+      - "traefik.http.middlewares.nyaya-headers.headers.SSLRedirect=true"
+      - "traefik.http.middlewares.nyaya-headers.headers.STSSeconds=315360000"
+      - "traefik.http.middlewares.nyaya-headers.headers.browserXSSFilter=true"
+      - "traefik.http.middlewares.nyaya-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.nyaya-headers.headers.forceSTSHeader=true"
+      - "traefik.http.routers.nyayasahayak.middlewares=nyaya-headers@docker"
+
+volumes:
+  nyaya_storage:
+
+networks:
+  n8n_default:
+    external: true

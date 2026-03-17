@@ -2,13 +2,15 @@
 # NyayaSahayak — Production Deploy Script
 # ─────────────────────────────────────────────────────────────
 # Usage:
-#   ./deploy.sh                            # uses root@62.72.13.191, prompts for password
-#   ./deploy.sh --key ~/.ssh/nyaya.pem     # uses SSH key
-#   ./deploy.sh ubuntu@1.2.3.4 --key ...  # custom server
+#   ./deploy.sh                            # uses root@62.72.13.191
+#   ./deploy.sh --pass yourpassword        # password auth
+#   ./deploy.sh --key ~/.ssh/nyaya.pem     # key auth
+#   ./deploy.sh ubuntu@1.2.3.4 --pass ... # custom server
 #
-# Requirements on server:
-#   - node >= 20, npm, pm2 (npm i -g pm2)
-#   - /opt/nyayasahayak/.env.local must already exist with DB_URL, NEXTAUTH_SECRET etc.
+# Deployment flow:
+#   1. rsync source → /docker/nyayasahayak/ on server
+#   2. docker build -t nyayasahayak:latest .
+#   3. docker compose down && docker compose up -d
 # ─────────────────────────────────────────────────────────────
 
 set -e
@@ -16,98 +18,84 @@ set -e
 SERVER="root@62.72.13.191"
 KEY=""
 PASSWORD=""
+REMOTE_DIR="/docker/nyayasahayak"
+LOCAL_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --key)     KEY="-i $2"; shift 2 ;;
-    --pass)    PASSWORD="$2"; shift 2 ;;
-    -*)        echo "Unknown option: $1"; exit 1 ;;
-    *)         SERVER="$1"; shift ;;
+    --key)  KEY="-i $2"; shift 2 ;;
+    --pass) PASSWORD="$2"; shift 2 ;;
+    -*)     echo "Unknown option: $1"; exit 1 ;;
+    *)      SERVER="$1"; shift ;;
   esac
 done
 
-SSH_BASE="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=10"
-SSH_OPTS="$SSH_BASE $KEY"
-REMOTE_DIR="/opt/nyayasahayak"
-LOCAL_DIR="$(cd "$(dirname "$0")" && pwd)"
+SSH_BASE="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=15"
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  NyayaSahayak Deploy → $SERVER"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-# Helper: run ssh with optional sshpass
 run_ssh() {
   if [ -n "$PASSWORD" ]; then
-    sshpass -p "$PASSWORD" ssh $SSH_OPTS "$SERVER" "$@"
+    printf "%s" "$PASSWORD" > /tmp/.deploy_pass
+    sshpass -f /tmp/.deploy_pass ssh $SSH_BASE $KEY "$SERVER" "$@"
+    rm -f /tmp/.deploy_pass
   else
-    ssh $SSH_OPTS "$SERVER" "$@"
+    ssh $SSH_BASE $KEY "$SERVER" "$@"
   fi
 }
 
 run_rsync() {
   if [ -n "$PASSWORD" ]; then
-    sshpass -p "$PASSWORD" rsync "$@"
+    printf "%s" "$PASSWORD" > /tmp/.deploy_pass
+    sshpass -f /tmp/.deploy_pass rsync "$@"
+    rm -f /tmp/.deploy_pass
   else
     rsync "$@"
   fi
 }
 
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  NyayaSahayak Deploy → $SERVER:$REMOTE_DIR"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
 # ── Step 1: Sync source ──────────────────────────────────────
 echo ""
-echo "📦  Syncing source to $SERVER:$REMOTE_DIR ..."
+echo "📦  Syncing source files..."
 run_rsync -az --delete \
   $KEY \
   -e "ssh $SSH_BASE" \
   --exclude=node_modules \
   --exclude=.next \
+  --exclude=.env \
   --exclude=.env.local \
   --exclude=.git \
   --exclude=storage \
   --exclude="*.log" \
   --exclude=electron-dist \
   --exclude="electron/out" \
+  --exclude=electron \
   "$LOCAL_DIR/" \
   "$SERVER:$REMOTE_DIR/"
 echo "✅  Source synced"
 
-# ── Step 2: Remote build + restart ──────────────────────────
+# ── Step 2: Docker build + restart ──────────────────────────
 echo ""
-echo "🔨  Building on server..."
+echo "🐳  Building Docker image on server..."
 run_ssh bash << 'REMOTE'
   set -e
-  cd /opt/nyayasahayak
+  cd /docker/nyayasahayak
 
-  # Load nvm if present
-  export NVM_DIR="$HOME/.nvm"
-  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-  export PATH="$HOME/.nvm/versions/node/$(node --version 2>/dev/null || echo v20)/bin:/usr/local/bin:$PATH"
+  echo "[1/2] Building image..."
+  docker build -t nyayasahayak:latest . 2>&1 | grep -E "^(#[0-9]+ DONE|Step|ERROR|Successfully)" | tail -20
 
-  echo "[1/4] Installing dependencies..."
-  npm ci --legacy-peer-deps --prefer-offline 2>&1 | tail -5
+  echo "[2/2] Restarting container..."
+  docker compose down 2>/dev/null || docker stop nyayasahayak 2>/dev/null && docker rm nyayasahayak 2>/dev/null || true
+  docker compose up -d
 
-  echo "[2/4] Generating Prisma client..."
-  npm run db:generate
-
-  echo "[3/4] Building Next.js..."
-  npm run build 2>&1 | tail -20
-
-  echo "[4/4] Restarting application..."
-  if command -v pm2 &>/dev/null; then
-    pm2 restart nyayasahayak 2>/dev/null \
-      || pm2 start npm --name nyayasahayak -- start --update-env
-    pm2 save --force
-    echo "✅  Restarted via PM2"
-  elif systemctl list-units --type=service | grep -q nyayasahayak; then
-    systemctl restart nyayasahayak
-    echo "✅  Restarted via systemctl"
-  else
-    echo "⚠️   No process manager running. Start manually:"
-    echo "     cd /opt/nyayasahayak && pm2 start npm --name nyayasahayak -- start"
-  fi
-
+  sleep 3
+  echo "✅  Container status:"
+  docker ps --filter name=nyayasahayak --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
   echo ""
-  echo "Server status:"
-  pm2 list 2>/dev/null | grep nyaya || true
+  echo "📋  Last 10 log lines:"
+  docker logs nyayasahayak --tail=10 2>&1
 REMOTE
 
 echo ""
