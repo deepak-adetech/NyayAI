@@ -1,0 +1,138 @@
+{
+  "name": "nyayasahayak-sync-agent",
+  "version": "1.1.0",
+  "description": "NyayaSahayak Desktop File Sync Agent — automatically syncs local case documents to NyayaSahayak",
+  "main": "src/main/main.js",
+  "author": {
+    "name": "NyayaSahayak",
+    "email": "support@nyayasahayak.com"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac --arm64 --x64",
+    "build:all": "electron-builder --win --mac",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "auto-launch": "^5.0.6",
+    "chokidar": "^3.6.0",
+    "electron-updater": "^6.3.9",
+    "form-data": "^4.0.1",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.nyayasahayak.syncagent",
+    "productName": "NyayaSahayak Sync",
+    "copyright": "Copyright © 2025 NyayaSahayak",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/chokidar/**",
+      "node_modules/fsevents/**"
+    ],
+    "icon": "assets/icon",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "!src/**/*.test.js",
+      "assets/icon.icns",
+      "assets/icon.ico",
+      "assets/icon.png",
+      "assets/tray-active.png",
+      "assets/tray-idle.png",
+      "assets/tray-active.ico",
+      "assets/tray-idle.ico",
+      "package.json",
+      "!node_modules/**/*.md",
+      "!node_modules/**/*.ts",
+      "!node_modules/**/test/**",
+      "!node_modules/**/tests/**",
+      "!node_modules/**/__tests__/**",
+      "!node_modules/**/example/**",
+      "!node_modules/**/examples/**",
+      "!node_modules/**/.github/**",
+      "!node_modules/**/docs/**",
+      "!**/*.map"
+    ],
+    "extraResources": [],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NyayaSahayak Sync",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "title": "NyayaSahayak Sync",
+      "icon": "assets/icon.icns",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png",
+      "category": "Office"
+    },
+    "compression": "maximum",
+    "removePackageScripts": true
+  }
+}

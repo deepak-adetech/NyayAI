@@ -8,3 +8,5 @@ watched-documents/
 service-account.json
 .DS_Store
 prisma/migrations/
+nyayasahayak-agent/node_modules/
+nyayasahayak-agent/dist/
