@@ -77,7 +77,7 @@ export default function SignupPage() {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Scale className="h-7 w-7 text-black" />
-            <span className="text-xl font-bold text-[#1e3a5f]">NyayaSahayak</span>
+            <span className="text-xl font-bold text-[#1e3a5f]">NyayAI</span>
           </div>
           <p className="text-gray-500 text-sm">Start your 14-day free trial</p>
         </div>

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Scale, Shield, Brain, Users, ArrowRight, CheckCircle } from "lucide-react";
 
 export const metadata = {
-  title: "About Us — NyayaSahayak",
-  description: "Learn about NyayaSahayak, India's AI-powered legal workspace built for the modern Indian lawyer.",
+  title: "About Us — NyayAI",
+  description: "Learn about NyayAI, India's AI-powered legal workspace built for the modern Indian lawyer.",
 };
 
 export default function AboutPage() {
@@ -13,8 +13,8 @@ export default function AboutPage() {
       <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto border-b border-gray-100">
         <Link href="/" className="flex items-center gap-2">
           <Scale className="h-7 w-7 text-black" />
-          <span className="text-black text-xl font-bold tracking-tight">NyayaSahayak</span>
-          <span className="text-gray-400 text-sm ml-1">न्यायसहायक</span>
+          <span className="text-black text-xl font-bold tracking-tight">NyayAI</span>
+          <span className="text-gray-400 text-sm ml-1">AI-Powered Legal Intelligence</span>
         </Link>
         <div className="flex items-center gap-4">
           <Link href="/login" className="text-gray-600 hover:text-black text-sm font-medium transition-colors">
@@ -34,7 +34,7 @@ export default function AboutPage() {
         <div className="pt-20 pb-16 text-center">
           <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-sm font-medium mb-8">
             <span className="h-1.5 w-1.5 bg-[#1e3a5f] rounded-full"></span>
-            About NyayaSahayak
+            About NyayAI
           </div>
           <h1 className="text-5xl font-bold text-black mb-6 leading-tight tracking-tight">
             Built for the Indian Lawyer.
@@ -42,9 +42,8 @@ export default function AboutPage() {
             <span className="text-gray-400">By People Who Understand Indian Law.</span>
           </h1>
           <p className="text-gray-500 text-xl leading-relaxed max-w-2xl mx-auto">
-            NyayaSahayak (न्यायसहायक) — meaning <em>"Justice Helper"</em> — is an AI-powered
-            legal workspace designed specifically for Indian advocates, from solo practitioners
-            to mid-size law firms.
+            NyayAI is an AI-powered legal intelligence platform designed specifically
+            for Indian advocates, from solo practitioners to mid-size law firms.
           </p>
         </div>
 
@@ -69,7 +68,7 @@ export default function AboutPage() {
               track hearings, store documents, or keep clients informed.
             </p>
             <p className="text-gray-600 text-lg leading-relaxed">
-              NyayaSahayak was built to solve exactly these problems. We combined deep knowledge
+              NyayAI was built to solve exactly these problems. We combined deep knowledge
               of Indian procedural law with modern AI to create the workspace that Indian lawyers
               have always needed but never had.
             </p>
@@ -101,7 +100,7 @@ export default function AboutPage() {
 
         {/* What We Do */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold text-black mb-8">What NyayaSahayak Does</h2>
+          <h2 className="text-3xl font-bold text-black mb-8">What NyayAI Does</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               {
@@ -140,7 +139,7 @@ export default function AboutPage() {
         <section className="mb-16">
           <h2 className="text-3xl font-bold text-black mb-6">Who We Are</h2>
           <p className="text-gray-600 text-lg leading-relaxed mb-4">
-            NyayaSahayak is a product of <strong>ADE Technologies</strong>, a technology company
+            NyayAI is a product of <strong>ADE Technologies</strong>, a technology company
             focused on building AI-powered SaaS solutions for regulated industries in India. Our
             team combines legal domain expertise, enterprise software engineering, and a deep
             understanding of the practical challenges faced by Indian legal professionals.
@@ -151,7 +150,7 @@ export default function AboutPage() {
             theoretical assumptions.
           </p>
           <p className="text-gray-600 text-lg leading-relaxed">
-            NyayaSahayak is not a law firm and does not provide legal advice. We build tools
+            NyayAI is not a law firm and does not provide legal advice. We build tools
             that help lawyers do their jobs better, faster, and with greater confidence.
           </p>
         </section>
@@ -182,7 +181,7 @@ export default function AboutPage() {
         <section className="mb-24 text-center py-16 bg-gray-50 rounded-2xl">
           <h2 className="text-3xl font-bold text-black mb-4">Ready to modernise your practice?</h2>
           <p className="text-gray-500 mb-8 max-w-lg mx-auto">
-            Join advocates across India who manage their cases smarter with NyayaSahayak.
+            Join advocates across India who manage their cases smarter with NyayAI.
             14-day free trial. No credit card required.
           </p>
           <Link
@@ -206,7 +205,7 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Scale className="h-5 w-5 text-black" />
-            <span className="font-semibold text-black text-sm">NyayaSahayak</span>
+            <span className="font-semibold text-black text-sm">NyayAI</span>
           </div>
           <div className="flex gap-6 text-sm text-gray-500">
             <Link href="/about" className="text-black font-medium">About</Link>
@@ -214,7 +213,7 @@ export default function AboutPage() {
             <Link href="/signup" className="hover:text-black transition-colors">Sign Up</Link>
           </div>
           <p className="text-gray-400 text-xs">
-            © 2026 NyayaSahayak · ADE Technologies · DPDP Act 2023 Compliant · Data stored in India
+            © 2026 NyayAI · ADE Technologies · DPDP Act 2023 Compliant · Data stored in India
           </p>
         </div>
       </footer>

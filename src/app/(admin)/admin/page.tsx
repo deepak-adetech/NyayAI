@@ -81,7 +81,7 @@ export default async function AdminDashboard() {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">Overview of NyayaSahayak platform metrics.</p>
+        <p className="text-gray-500 text-sm mt-1">Overview of NyayAI platform metrics.</p>
       </div>
 
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-5 mb-8">

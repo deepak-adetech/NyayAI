@@ -1,0 +1,133 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "cases": "मुकदमे",
+    "documents": "दस्तावेज़",
+    "hearings": "सुनवाई",
+    "aiAssistant": "AI सहायक",
+    "tools": "उपकरण",
+    "sectionMapper": "धारा मैपर",
+    "noticeGenerator": "नोटिस जनरेटर",
+    "bailDrafter": "ज़मानत प्रारूपक",
+    "draftGenerator": "प्रारूप जनरेटर",
+    "fileSync": "फ़ाइल सिंक",
+    "invoices": "चालान",
+    "billing": "बिलिंग",
+    "settings": "सेटिंग्स",
+    "signOut": "साइन आउट"
+  },
+  "common": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएँ",
+    "edit": "संपादित करें",
+    "create": "बनाएँ",
+    "search": "खोजें",
+    "loading": "लोड हो रहा है...",
+    "submit": "जमा करें",
+    "generate": "उत्पन्न करें",
+    "copy": "कॉपी करें",
+    "download": "डाउनलोड",
+    "back": "वापस",
+    "next": "अगला",
+    "previous": "पिछला",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "confirm": "पुष्टि करें",
+    "close": "बंद करें",
+    "view": "देखें",
+    "actions": "कार्य",
+    "status": "स्थिति",
+    "date": "तारीख",
+    "amount": "राशि",
+    "total": "कुल",
+    "description": "विवरण",
+    "name": "नाम",
+    "email": "ईमेल",
+    "phone": "फ़ोन",
+    "address": "पता"
+  },
+  "cases": {
+    "title": "मुकदमे",
+    "newCase": "नया मुकदमा",
+    "caseNumber": "केस नंबर",
+    "cnrNumber": "CNR नंबर",
+    "caseType": "केस प्रकार",
+    "court": "न्यायालय",
+    "judge": "न्यायाधीश",
+    "filingDate": "दाखिल तिथि",
+    "nextHearing": "अगली सुनवाई",
+    "lastHearing": "अंतिम सुनवाई",
+    "petitioners": "याचिकाकर्ता",
+    "respondents": "प्रतिवादी",
+    "advocates": "अधिवक्ता",
+    "status": {
+      "active": "सक्रिय",
+      "disposed": "निस्तारित",
+      "archived": "अभिलेखागार",
+      "transferred": "स्थानांतरित",
+      "stayed": "स्थगित"
+    }
+  },
+  "hearings": {
+    "title": "सुनवाई",
+    "newHearing": "नई सुनवाई",
+    "hearingDate": "सुनवाई तिथि",
+    "purpose": "उद्देश्य",
+    "courtRoom": "कोर्ट रूम",
+    "orderSummary": "आदेश सारांश"
+  },
+  "documents": {
+    "title": "दस्तावेज़",
+    "upload": "दस्तावेज़ अपलोड करें",
+    "type": "दस्तावेज़ प्रकार",
+    "fileName": "फ़ाइल नाम",
+    "fileSize": "फ़ाइल आकार"
+  },
+  "invoices": {
+    "title": "चालान",
+    "createInvoice": "चालान बनाएँ",
+    "invoiceNumber": "चालान संख्या",
+    "client": "मुवक्किल",
+    "dueDate": "देय तिथि",
+    "lineItems": "मद विवरण",
+    "subtotal": "उप-कुल",
+    "tax": "कर (GST)",
+    "grandTotal": "कुल योग",
+    "status": {
+      "draft": "प्रारूप",
+      "sent": "भेजा गया",
+      "paid": "भुगतान हो गया",
+      "overdue": "अतिदेय"
+    }
+  },
+  "ai": {
+    "title": "AI विधिक सहायक",
+    "poweredBy": "Claude AI द्वारा संचालित",
+    "sectionFinder": "BNS/IPC धारा खोजक",
+    "legalResearch": "विधिक अनुसंधान",
+    "caseSummary": "केस सारांश",
+    "limitationCalculator": "परिसीमा कैलकुलेटर",
+    "generateReport": "रिपोर्ट बनाएँ",
+    "calculating": "गणना हो रही है..."
+  },
+  "tools": {
+    "title": "विधिक उपकरण",
+    "sectionMapper": {
+      "title": "IPC / BNS धारा मैपर",
+      "subtitle": "किसी भी IPC या BNS धारा का नए/पुराने कानून में समकक्ष खोजें"
+    },
+    "noticeGenerator": {
+      "title": "कानूनी नोटिस जनरेटर",
+      "subtitle": "मानक भारतीय प्रारूप में पेशेवर कानूनी नोटिस बनाएँ"
+    },
+    "bailDrafter": {
+      "title": "ज़मानत अर्ज़ी प्रारूपक",
+      "subtitle": "न्यायालय प्रारूप में ज़मानत अर्ज़ी तैयार करें"
+    },
+    "draftGenerator": {
+      "title": "विधिक प्रारूप जनरेटर",
+      "subtitle": "वाद पत्र, लिखित कथन, याचिका और अन्य प्रारूप बनाएँ"
+    }
+  }
+}

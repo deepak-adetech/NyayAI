@@ -126,15 +126,26 @@ export default auth((req) => {
     }
   }
 
-  // Client portal requires CLIENT role
-  if (isPortal && !isLoggedIn) {
+  // Client portal requires CLIENT role (but allow /portal/login itself)
+  const isPortalLogin = pathname === "/portal/login";
+
+  if (isPortal && !isPortalLogin && !isLoggedIn) {
     return NextResponse.redirect(new URL("/portal/login", nextUrl));
   }
 
-  if (isPortal && isLoggedIn) {
+  // Redirect logged-in non-clients away from portal
+  if (isPortal && !isPortalLogin && isLoggedIn) {
     const role = (session.user as any).role;
     if (role !== "CLIENT" && role !== "ADMIN") {
       return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    }
+  }
+
+  // Redirect logged-in clients from /portal/login to portal cases
+  if (isPortalLogin && isLoggedIn) {
+    const role = (session.user as any).role;
+    if (role === "CLIENT") {
+      return NextResponse.redirect(new URL("/portal/cases", nextUrl));
     }
   }
 

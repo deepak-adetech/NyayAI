@@ -40,7 +40,7 @@ export default function SyncFolderManager({ folders, recentSynced }: Props) {
           How Auto-Sync Works
         </h3>
         <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-          <li>Install the NyayaSahayak Sync agent on your computer (Step 1 above)</li>
+          <li>Install the NyayAI Sync agent on your computer (Step 1 above)</li>
           <li>Open the agent, sign in, and <strong>select folders to watch</strong> from your computer</li>
           <li>The agent monitors those folders for new PDFs, Word docs, and images</li>
           <li>Each file is read, classified (FIR, Order, Judgment…) and matched to the right case</li>
@@ -108,7 +108,7 @@ export default function SyncFolderManager({ folders, recentSynced }: Props) {
             ))}
           </div>
           <p className="text-xs text-gray-400 mt-3">
-            To add or remove folders, open the NyayaSahayak Sync app on your computer.
+            To add or remove folders, open the NyayAI Sync app on your computer.
           </p>
         </div>
       )}

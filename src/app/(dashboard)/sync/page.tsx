@@ -54,7 +54,7 @@ export default async function SyncPage() {
             </div>
             <div>
               <p className="font-semibold text-gray-800 text-sm">Windows</p>
-              <p className="text-xs text-gray-500">NyayaSahayak-Sync-Setup.exe · ~78 MB</p>
+              <p className="text-xs text-gray-500">NyayAI-Sync-Setup.exe · ~78 MB</p>
               <p className="text-xs text-blue-600 mt-0.5 group-hover:underline">Download →</p>
             </div>
           </a>
@@ -104,8 +104,8 @@ export default async function SyncPage() {
         <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2.5">
           <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-green-800">
-            <strong>After installing:</strong> Open NyayaSahayak Sync from your system tray (Windows) or Applications (Mac),
-            sign in with your NyayaSahayak email &amp; password, then select the folders you want to watch.
+            <strong>After installing:</strong> Open NyayAI Sync from your system tray (Windows) or Applications (Mac),
+            sign in with your NyayAI email &amp; password, then select the folders you want to watch.
             Files sync automatically from that point on.
           </p>
         </div>

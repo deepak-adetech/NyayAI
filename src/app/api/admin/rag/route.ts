@@ -20,11 +20,17 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
   const body = await req.json();
   const { action } = body;
+
+  // Allow bulk-seed via cron secret (no session needed for initial setup)
+  const cronSecret = req.headers.get("x-cron-secret");
+  const isCron = cronSecret === process.env.CRON_SECRET && !!process.env.CRON_SECRET;
+
+  if (!isCron) {
+    const session = await requireAdmin();
+    if (!session) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   if (action === "add") {
     const { title, content, category, source, metadata } = body;
@@ -43,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ results });
   }
 
-  if (action === "bulk-seed") {
+  if (action === "bulk-seed" || action === "seed") {
     const result = await seedInitialData();
     return NextResponse.json({ success: true, ...result });
   }

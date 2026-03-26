@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { FileText, Upload } from "lucide-react";
+import { FileText, Upload, Download } from "lucide-react";
 import DocumentUploadForm from "./DocumentUploadForm";
 
 export default async function DocumentsPage({
@@ -120,6 +120,9 @@ export default async function DocumentsPage({
                   <th className="text-left text-xs font-medium text-gray-500 px-4 py-3 uppercase">
                     Date
                   </th>
+                  <th className="text-left text-xs font-medium text-gray-500 px-4 py-3 uppercase">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -176,6 +179,12 @@ export default async function DocumentsPage({
                       <span className="text-sm text-gray-500">
                         {formatDate(doc.createdAt)}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <a href={`/api/documents/${doc.id}/download`} className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-1">
+                        <Download className="h-3.5 w-3.5" />
+                        Download
+                      </a>
                     </td>
                   </tr>
                 ))}

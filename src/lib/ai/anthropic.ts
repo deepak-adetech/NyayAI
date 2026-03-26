@@ -10,7 +10,7 @@ export const MODELS = {
 } as const;
 
 // Shared system prompt for legal context
-export const LEGAL_SYSTEM_PROMPT = `You are NyayaSahayak AI — an expert Indian legal assistant with deep knowledge of:
+export const LEGAL_SYSTEM_PROMPT = `You are NyayAI — an expert Indian legal assistant with deep knowledge of:
 - Bharatiya Nyaya Sanhita (BNS) 2023 — all 358 sections, replacements for IPC 1860
 - Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023 — replacing CrPC 1973
 - Bharatiya Sakshya Adhiniyam (BSA) 2023 — replacing Indian Evidence Act 1872

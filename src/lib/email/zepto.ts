@@ -1,5 +1,5 @@
 /**
- * Zepto Mail Service — NyayaSahayak
+ * Zepto Mail Service — NyayAI
  * Uses Zepto Mail's Email Sending API (Transactional)
  * Docs: https://www.zeptomail.com/api-docs/
  */
@@ -18,7 +18,7 @@ async function _sendEmail(payload: EmailPayload): Promise<boolean> {
   // Support both ZEPTO_API_TOKEN and ZEPTOMAIL_API_TOKEN naming conventions
   const apiToken = process.env.ZEPTO_API_TOKEN ?? process.env.ZEPTOMAIL_API_TOKEN;
   const fromEmail = process.env.ZEPTO_FROM_EMAIL ?? process.env.ZEPTOMAIL_FROM_EMAIL ?? "noreply@nyayasahayak.com";
-  const fromName = process.env.ZEPTO_FROM_NAME ?? process.env.ZEPTOMAIL_FROM_NAME ?? "NyayaSahayak";
+  const fromName = process.env.ZEPTO_FROM_NAME ?? process.env.ZEPTOMAIL_FROM_NAME ?? "NyayAI";
 
   if (!apiToken) {
     console.warn("[Email] ZEPTO_API_TOKEN / ZEPTOMAIL_API_TOKEN not set — skipping email send");
@@ -109,7 +109,7 @@ function emailWrapper(content: string): string {
       <div style="${baseStyle}">
         <!-- Header -->
         <div style="text-align:center;padding:16px 0 8px;">
-          <span style="font-size:22px;font-weight:700;color:#1e3a5f;">⚖ NyayaSahayak</span>
+          <span style="font-size:22px;font-weight:700;color:#1e3a5f;">⚖ NyayAI</span>
         </div>
         <!-- Card -->
         <div style="${cardStyle}">
@@ -117,9 +117,9 @@ function emailWrapper(content: string): string {
         </div>
         <!-- Footer -->
         <div style="${footerStyle}">
-          <p>NyayaSahayak · Legal Case Management</p>
+          <p>NyayAI · AI-Powered Legal Intelligence</p>
           <p>If you didn't request this, please ignore this email.</p>
-          <p>© ${new Date().getFullYear()} NyayaSahayak. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} NyayAI. All rights reserved.</p>
         </div>
       </div>
     </body>
@@ -153,11 +153,11 @@ export async function sendVerificationEmail(
 ): Promise<boolean> {
   const html = emailWrapper(`
     <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">Verify your email address</h2>
-    <p style="color:#475569;margin:0 0 24px;">Hi ${name}, welcome to NyayaSahayak! Please verify your email address to activate your account and start your 14-day free trial.</p>
+    <p style="color:#475569;margin:0 0 24px;">Hi ${name}, welcome to NyayAI! Please verify your email address to activate your account and start your 14-day free trial.</p>
     <div style="text-align:center;">
       <a href="${verificationUrl}" style="${btnStyle}">Verify Email Address</a>
     </div>
-    <p style="color:#94a3b8;font-size:13px;margin-top:16px;">This link expires in <strong>24 hours</strong>. If you didn't sign up for NyayaSahayak, you can safely ignore this email.</p>
+    <p style="color:#94a3b8;font-size:13px;margin-top:16px;">This link expires in <strong>24 hours</strong>. If you didn't sign up for NyayAI, you can safely ignore this email.</p>
     <hr style="border:none;border-top:1px solid #f1f5f9;margin:20px 0;" />
     <p style="color:#64748b;font-size:12px;word-break:break-all;">Or copy and paste this URL:<br/>${verificationUrl}</p>
   `);
@@ -165,7 +165,7 @@ export async function sendVerificationEmail(
   return _sendEmail({
     to: email,
     toName: name,
-    subject: "Verify your NyayaSahayak email address",
+    subject: "Verify your NyayAI email address",
     htmlBody: html,
   });
 }
@@ -177,7 +177,7 @@ export async function sendPasswordResetEmail(
 ): Promise<boolean> {
   const html = emailWrapper(`
     <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">Reset your password</h2>
-    <p style="color:#475569;margin:0 0 24px;">Hi ${name}, we received a request to reset your NyayaSahayak password. Click the button below to set a new password.</p>
+    <p style="color:#475569;margin:0 0 24px;">Hi ${name}, we received a request to reset your NyayAI password. Click the button below to set a new password.</p>
     <div style="text-align:center;">
       <a href="${resetUrl}" style="${btnStyle}">Reset Password</a>
     </div>
@@ -189,34 +189,45 @@ export async function sendPasswordResetEmail(
   return _sendEmail({
     to: email,
     toName: name,
-    subject: "Reset your NyayaSahayak password",
+    subject: "Reset your NyayAI password",
     htmlBody: html,
   });
 }
 
 export async function sendWelcomeEmail(email: string, name: string): Promise<boolean> {
-  const dashUrl = process.env.NEXTAUTH_URL ?? "https://case.ade-technologies.com";
+  const appUrl = (process.env.NEXTAUTH_URL ?? "https://case.ade-technologies.com").replace(/\/$/, "");
+  const loginUrl = `${appUrl}/login`;
+  const dashUrl = `${appUrl}/dashboard`;
 
   const html = emailWrapper(`
-    <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">Welcome to NyayaSahayak, ${name}! 🎉</h2>
-    <p style="color:#475569;margin:0 0 16px;">Your account is verified and your <strong>14-day free trial</strong> has started. Here's what you can do:</p>
-    <ul style="color:#475569;padding-left:20px;line-height:1.8;margin:0 0 20px;">
-      <li>📁 Create and manage your cases</li>
-      <li>📄 Upload and AI-classify documents</li>
-      <li>🗓 Track upcoming hearings</li>
-      <li>🤖 Identify applicable BNS/IPC sections using AI</li>
-      <li>💻 Install the desktop sync agent to auto-sync local files</li>
-    </ul>
-    <div style="text-align:center;">
-      <a href="${dashUrl}/dashboard" style="${btnStyle}">Go to Dashboard →</a>
+    <div style="background:#16a34a;border-radius:8px;padding:10px 16px;margin-bottom:20px;">
+      <p style="margin:0;color:white;font-size:13px;font-weight:600;text-align:center;text-transform:uppercase;">Email Verified — Account Active</p>
     </div>
-    <p style="color:#94a3b8;font-size:13px;margin-top:16px;">Need help? Reply to this email or contact <a href="mailto:support@nyayasahayak.com" style="color:#1e3a5f;">support@nyayasahayak.com</a></p>
+    <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">Welcome to NyayAI, ${name}!</h2>
+    <p style="color:#475569;margin:0 0 16px;line-height:1.6;">Your email is verified and your <strong>14-day free trial</strong> has started. Sign in now to access your legal workspace.</p>
+    <div style="text-align:center;margin:20px 0;">
+      <a href="${loginUrl}" style="${btnStyle}">Sign In to Your Account</a>
+    </div>
+    <div style="background:#eff6ff;border-left:4px solid #1e3a5f;border-radius:4px;padding:14px 18px;margin:20px 0;">
+      <p style="margin:0 0 8px;font-weight:600;color:#1e3a5f;font-size:14px;">What you can do with NyayAI:</p>
+      <ul style="margin:0;padding-left:18px;color:#475569;font-size:13px;line-height:1.9;">
+        <li>Create and manage all your cases in one place</li>
+        <li>Auto-fill case details by entering a CNR number</li>
+        <li>Upload documents — AI classifies and indexes them</li>
+        <li>Track upcoming hearings with automatic reminders</li>
+        <li>AI-powered BNS/IPC section identification</li>
+        <li>Get complete case summaries with expert legal advice</li>
+        <li>Desktop sync agent to auto-sync local case files</li>
+      </ul>
+    </div>
+    <p style="color:#64748b;font-size:13px;margin:16px 0 0;">Your dashboard: <a href="${dashUrl}" style="color:#1e3a5f;">${dashUrl}</a></p>
+    <p style="color:#94a3b8;font-size:13px;margin-top:8px;">Questions? Contact us at <a href="mailto:support@nyayasahayak.com" style="color:#1e3a5f;">support@nyayasahayak.com</a></p>
   `);
 
   return _sendEmail({
     to: email,
     toName: name,
-    subject: "Welcome to NyayaSahayak — your legal workspace is ready!",
+    subject: "Welcome to NyayAI — your legal workspace is ready!",
     htmlBody: html,
   });
 }

@@ -60,13 +60,13 @@ export default function OnboardingPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Scale className="h-8 w-8 text-[#1e3a5f]" />
-            <span className="text-2xl font-bold text-[#1e3a5f]">NyayaSahayak</span>
+            <span className="text-2xl font-bold text-[#1e3a5f]">NyayAI</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
             Welcome to Your Legal Workspace! 🎉
           </h1>
           <p className="text-gray-500">
-            Let&apos;s set up NyayaSahayak in 4 quick steps. Your 14-day free trial has started.
+            Let&apos;s set up NyayAI in 4 quick steps. Your 14-day free trial has started.
           </p>
         </div>
 

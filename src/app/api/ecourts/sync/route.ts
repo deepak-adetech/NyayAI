@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getCaseByCNR, ECourtCase, ECourtAPIError } from "@/lib/ecourts";
+import { getCaseByCNR, ECourtCase, ECourtAPIError, getOrderDocument } from "@/lib/ecourts";
+import { uploadFile, generateStorageKey } from "@/lib/storage";
 
 /**
  * POST /api/ecourts/sync
@@ -51,13 +52,50 @@ export async function POST(req: NextRequest) {
       data: {
         status: mapECourtsStatus(eCase.caseStatus),
         courtName: eCase.courtName || dbCase.courtName,
+        benchJudge: eCase.judge || dbCase.benchJudge || undefined,
         nextHearingDate: eCase.nextHearingDate ? parseDate(eCase.nextHearingDate) : dbCase.nextHearingDate,
         ecourtsLastSync: new Date(),
         ecourtsData: JSON.stringify(eCase),
       },
     });
 
-    // Create a hearing for next hearing date if it doesn't exist
+    // Upsert ALL hearing records from eCourts hearing history
+    if (eCase.hearingHistory?.length) {
+      for (const h of eCase.hearingHistory) {
+        const hearingDate = parseDate(h.hearingDate || h.businessDate);
+        if (!hearingDate) continue;
+
+        const existingHearing = await prisma.hearing.findFirst({
+          where: { caseId, hearingDate },
+        });
+
+        if (existingHearing) {
+          await prisma.hearing.update({
+            where: { id: existingHearing.id },
+            data: {
+              purpose: h.purpose || existingHearing.purpose,
+              court: eCase.courtName || existingHearing.court,
+              judge: eCase.judge || existingHearing.judge,
+              status: hearingDate < new Date() ? "COMPLETED" : "SCHEDULED",
+            },
+          });
+        } else {
+          await prisma.hearing.create({
+            data: {
+              caseId,
+              lawyerId: dbCase.lawyerId,
+              hearingDate,
+              purpose: h.purpose || "Hearing",
+              court: eCase.courtName,
+              judge: eCase.judge,
+              status: hearingDate < new Date() ? "COMPLETED" : "SCHEDULED",
+            },
+          });
+        }
+      }
+    }
+
+    // Also create a hearing for the next hearing date if not already covered
     if (eCase.nextHearingDate) {
       const nextDate = parseDate(eCase.nextHearingDate);
       if (nextDate) {
@@ -71,6 +109,92 @@ export async function POST(req: NextRequest) {
             purpose: nextPurpose,
             court: eCase.courtName ?? "",
           },
+        });
+      }
+    }
+
+    // Upsert orders — attach order details to matching hearings and download PDFs
+    if (eCase.orders?.length) {
+      for (const o of eCase.orders) {
+        const orderDate = parseDate(o.orderDate);
+        if (!orderDate) continue;
+
+        const hearing = await prisma.hearing.findFirst({
+          where: { caseId, hearingDate: orderDate },
+        });
+
+        if (hearing && o.orderDetails) {
+          await prisma.hearing.update({
+            where: { id: hearing.id },
+            data: { orderSummary: o.orderDetails },
+          });
+        }
+
+        // Download order PDF if a link is available and we haven't stored it yet
+        if (o.orderLink) {
+          const dateStr = orderDate.toISOString().slice(0, 10);
+          const orderFileName = `order_${dateStr}.pdf`;
+
+          // Check if we already have this order document stored
+          const existingDoc = await prisma.document.findFirst({
+            where: {
+              caseId,
+              type: "ORDER",
+              fileName: orderFileName,
+            },
+          });
+
+          if (!existingDoc) {
+            try {
+              const pdfBuffer = await getOrderDocument(
+                dbCase.cnrNumber!,
+                o.orderDate,
+                o.orderLink
+              );
+
+              if (pdfBuffer) {
+                const storageKey = generateStorageKey(
+                  dbCase.lawyerId,
+                  caseId,
+                  orderFileName
+                );
+
+                const stored = await uploadFile(pdfBuffer, storageKey, "application/pdf");
+
+                await prisma.document.create({
+                  data: {
+                    caseId,
+                    uploadedById: dbCase.lawyerId,
+                    type: "ORDER",
+                    title: `Court Order — ${dateStr}`,
+                    fileName: orderFileName,
+                    fileSize: stored.size,
+                    mimeType: "application/pdf",
+                    storagePath: stored.key,
+                    storageBucket: "local",
+                  },
+                });
+              }
+            } catch (err) {
+              // Non-critical — log and continue syncing
+              console.warn(`Failed to download order PDF for ${o.orderDate}:`, err);
+            }
+          }
+        }
+      }
+    }
+
+    // Update lastHearingDate from hearing history
+    if (eCase.hearingHistory?.length) {
+      const pastHearings = eCase.hearingHistory
+        .map(h => parseDate(h.hearingDate || h.businessDate))
+        .filter((d): d is Date => d !== null && d < new Date())
+        .sort((a, b) => b.getTime() - a.getTime());
+
+      if (pastHearings[0]) {
+        await prisma.case.update({
+          where: { id: caseId },
+          data: { lastHearingDate: pastHearings[0] },
         });
       }
     }
@@ -103,11 +227,14 @@ function mapECourtsStatus(ecStatus: string): "ACTIVE" | "DISPOSED" | "ARCHIVED" 
   return "ACTIVE";
 }
 
-function parseDate(dateStr: string): Date | null {
+function parseDate(dateStr: string | null | undefined): Date | null {
   if (!dateStr) return null;
-  // Try dd-mm-yyyy
-  const match = dateStr.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/);
-  if (match) return new Date(`${match[3]}-${match[2]}-${match[1]}`);
+  // Try DD-MM-YYYY or DD/MM/YYYY
+  const parts = dateStr.split(/[-\/]/);
+  if (parts.length === 3 && parts[0].length <= 2) {
+    const d = new Date(`${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`);
+    if (!isNaN(d.getTime())) return d;
+  }
   const d = new Date(dateStr);
   return isNaN(d.getTime()) ? null : d;
 }

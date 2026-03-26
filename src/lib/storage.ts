@@ -16,9 +16,15 @@ export interface StorageFile {
   mimeType: string;
 }
 
+// Resolve storage base path — handles both absolute (/app/storage) and relative (./storage) paths
+function resolveStoragePath(subPath: string): string {
+  const base = path.isAbsolute(LOCAL_PATH) ? LOCAL_PATH : path.join(process.cwd(), LOCAL_PATH);
+  return path.join(base, subPath);
+}
+
 // Ensure local storage directory exists
 async function ensureLocalDir(subPath: string): Promise<void> {
-  const dir = path.join(process.cwd(), LOCAL_PATH, path.dirname(subPath));
+  const dir = path.dirname(resolveStoragePath(subPath));
   await fs.mkdir(dir, { recursive: true });
 }
 
@@ -41,7 +47,7 @@ async function uploadToLocal(
   // Sanitize key — prevent path traversal
   const safeKey = key.replace(/\.\./g, "").replace(/^\/+/, "");
   await ensureLocalDir(safeKey);
-  const filePath = path.join(process.cwd(), LOCAL_PATH, safeKey);
+  const filePath = resolveStoragePath(safeKey);
   await fs.writeFile(filePath, buffer);
   return {
     key: safeKey,
@@ -87,7 +93,7 @@ export async function getFile(key: string): Promise<Buffer | null> {
 
 async function getFromLocal(key: string): Promise<Buffer | null> {
   const safeKey = key.replace(/\.\./g, "").replace(/^\/+/, "");
-  const filePath = path.join(process.cwd(), LOCAL_PATH, safeKey);
+  const filePath = resolveStoragePath(safeKey);
   try {
     return await fs.readFile(filePath);
   } catch {
@@ -127,7 +133,7 @@ export async function deleteFile(key: string): Promise<void> {
   }
 
   const safeKey = key.replace(/\.\./g, "").replace(/^\/+/, "");
-  const filePath = path.join(process.cwd(), LOCAL_PATH, safeKey);
+  const filePath = resolveStoragePath(safeKey);
   try {
     await fs.unlink(filePath);
   } catch {

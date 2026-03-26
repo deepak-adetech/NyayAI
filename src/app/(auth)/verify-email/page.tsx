@@ -84,7 +84,7 @@ export default function VerifyEmailPage() {
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2">
             <Scale className="h-8 w-8 text-[#1e3a5f]" />
-            <span className="text-2xl font-bold text-[#1e3a5f]">NyayaSahayak</span>
+            <span className="text-2xl font-bold text-[#1e3a5f]">NyayAI</span>
           </div>
         </div>
         <Suspense fallback={

@@ -8,11 +8,11 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | NyayaSahayak",
-    default: "NyayaSahayak — AI Legal Assistant for Indian Lawyers",
+    template: "%s | NyayAI",
+    default: "NyayAI — AI-Powered Legal Intelligence for Indian Advocates",
   },
   description:
-    "AI-powered legal workspace for Indian lawyers. BNS/IPC section identification, case management, OCR for FIRs, hearing reminders, and legal research.",
+    "AI-powered legal intelligence for Indian advocates. Case analysis, judge assessment, BNS/IPC mapping, document drafting, eCourts sync, client portal, and RAG-powered legal research.",
   robots: { index: false, follow: false }, // Private SaaS — no public indexing
 };
 

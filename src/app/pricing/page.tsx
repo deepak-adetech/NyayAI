@@ -169,7 +169,7 @@ export default function PricingPage() {
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-[#1e3a5f] text-xl font-bold tracking-tight">NyayaSahayak</span>
+            <span className="text-[#1e3a5f] text-xl font-bold tracking-tight">NyayAI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-gray-600 hover:text-[#1e3a5f] text-sm font-medium transition-colors hidden sm:block">
@@ -356,11 +356,11 @@ export default function PricingPage() {
       <section className="bg-gray-50 py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-[#1e3a5f] mb-3 text-center">How we compare</h2>
-          <p className="text-gray-500 text-sm text-center mb-10">NyayaSahayak gives you more features at a lower price than any competitor.</p>
+          <p className="text-gray-500 text-sm text-center mb-10">NyayAI gives you more features at a lower price than any competitor.</p>
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="grid grid-cols-4 border-b border-gray-100 bg-gray-50">
               <div className="p-4 text-sm font-semibold text-gray-700">Feature</div>
-              <div className="p-4 text-sm font-bold text-[#1e3a5f] text-center">NyayaSahayak</div>
+              <div className="p-4 text-sm font-bold text-[#1e3a5f] text-center">NyayAI</div>
               <div className="p-4 text-sm font-semibold text-gray-500 text-center">LawSathi</div>
               <div className="p-4 text-sm font-semibold text-gray-500 text-center">VakilAI</div>
             </div>
@@ -397,7 +397,7 @@ export default function PricingPage() {
           <div className="grid md:grid-cols-2 gap-6">
             {[
               {
-                text: "I was paying Rs 2,500 per month to a competitor and getting fewer features. Switched to NyayaSahayak Professional at Rs 1,999 and have not looked back.",
+                text: "I was paying Rs 2,500 per month to a competitor and getting fewer features. Switched to NyayAI Professional at Rs 1,999 and have not looked back.",
                 name: "Adv. Meena Patil",
                 location: "Bombay High Court",
                 initials: "MP",
@@ -457,7 +457,7 @@ export default function PricingPage() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-100 py-8 px-6 text-center">
-        <p className="text-gray-400 text-sm">&copy; 2025 NyayaSahayak. All rights reserved. Made in India.</p>
+        <p className="text-gray-400 text-sm">&copy; 2025 NyayAI. All rights reserved. Made in India.</p>
       </footer>
     </div>
   );

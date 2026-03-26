@@ -1,12 +1,14 @@
 -- =====================================================
 -- NyayaSahayak RAG Setup — Run in Supabase SQL Editor
 -- https://supabase.com/dashboard/project/tsmiyomiifkrzuhtlpff/sql
+-- Embedding model: voyage-law-2 (1024 dims)
 -- =====================================================
 
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Legal documents table for RAG + case learning
+-- NOTE: voyage-law-2 produces 1024-dimensional vectors
 CREATE TABLE IF NOT EXISTS legal_documents (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   title text NOT NULL,
@@ -18,7 +20,7 @@ CREATE TABLE IF NOT EXISTS legal_documents (
   )),
   source text,
   metadata jsonb DEFAULT '{}',
-  embedding vector(1536),
+  embedding vector(1024),
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -34,7 +36,7 @@ CREATE INDEX IF NOT EXISTS legal_documents_embedding_idx
 
 -- Search function with optional lawyer filter for personalised case learning
 CREATE OR REPLACE FUNCTION search_legal_documents(
-  query_embedding vector(1536),
+  query_embedding vector(1024),
   match_threshold float DEFAULT 0.60,
   match_count int DEFAULT 6,
   filter_lawyer_id text DEFAULT NULL

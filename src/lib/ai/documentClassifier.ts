@@ -54,12 +54,12 @@ export async function classifyDocument(
   text: string,
   fileName: string
 ): Promise<DocumentClassificationResult> {
-  const truncatedText = text.substring(0, 5000);
+  const truncatedText = text.substring(0, 30000);
 
-  const prompt = `Analyze this Indian legal document text and classify it.
+  const prompt = `Analyze this Indian legal document text and classify it. Provide a comprehensive and detailed analysis.
 
 Filename: ${fileName}
-Content (first 5000 chars):
+Content (first 30000 chars):
 ${truncatedText}
 
 Identify the document type from: FIR, CHARGESHEET, JUDGMENT, ORDER, PETITION, BAIL_APPLICATION, WRITTEN_STATEMENT, PLAINT, REPLY, AFFIDAVIT, VAKALATNAMA, AGREEMENT, NOTICE, CAUSE_LIST, EVIDENCE, CLIENT_DOCUMENT, OTHER
@@ -72,6 +72,24 @@ Extract all available information:
 - Important dates (filing, hearing, order)
 - Primary language of the document
 - Whether OCR processing is needed
+
+For the "summary" field, provide a COMPREHENSIVE ANALYSIS (not just 2-3 sentences) structured as follows:
+
+**Summary**: A detailed 5-10 sentence summary covering all key facts, background, and context of the case or document.
+
+**Key Findings/Orders**: What the court ordered, directed, or held. Include all operative directions, conditions imposed, and compliance requirements.
+
+**Parties Involved**: Full names and roles of all parties (petitioners, respondents, advocates, judges, witnesses, etc.).
+
+**Dates Mentioned**: All important dates including filing date, hearing dates, order date, next date of hearing, and any other significant dates referenced in the document.
+
+**Legal Provisions Cited**: All acts, sections, rules, articles, and legal precedents referenced (e.g., IPC/BNS sections, CrPC/BNSS provisions, Constitutional articles, specific case law cited).
+
+**Relief Sought/Granted**: What relief or remedy was sought by the parties and what was actually granted or denied by the court.
+
+**Current Status**: The current status of the case after this document — whether disposed, pending, adjourned, reserved for orders, etc.
+
+Format the summary field as a single string with the above sections separated by newlines, using the bold section headers shown above.
 
 Respond as JSON:
 {
@@ -86,7 +104,7 @@ Respond as JSON:
   "extractedSections": [],
   "extractedDates": [{"type": "hearing_date", "date": "2024-03-15"}],
   "suggestedCaseTitle": "State vs. [Name] or [Party A] vs [Party B]",
-  "summary": "2-3 sentence summary",
+  "summary": "Comprehensive analysis with all sections described above",
   "language": "Hindi|English|Marathi|etc",
   "isHandwritten": false,
   "ocrNeeded": false

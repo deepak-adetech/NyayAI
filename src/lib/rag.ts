@@ -1,29 +1,29 @@
 /**
- * RAG (Retrieval Augmented Generation) Engine for NyayaSahayak
+ * RAG (Retrieval Augmented Generation) Engine for NyayAI
  *
  * Architecture:
  *  1. Legal Knowledge Base  — static Indian law (BNS/IPC/BNSS/CrPC/BSA/IEA + SC judgments)
  *  2. Case Learning         — each lawyer's own cases + notes are indexed for personalised advice
  *  3. Web Fallback          — if local knowledge is thin, surface a web-search suggestion
  *
- * Embedding model: OpenAI text-embedding-3-small (1536 dims, cost-efficient)
+ * Embedding model: Claude (voyage-law-2 via Anthropic) or fallback text hash
  * Vector store:    Supabase pgvector  (legal_documents table)
  */
 
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { getSupabaseAdmin } from "./supabase";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Lazy init
 // ──────────────────────────────────────────────────────────────────────────────
 
-let _openai: OpenAI | null = null;
-function getOpenAI(): OpenAI {
-  if (!_openai) {
-    if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let _anthropic: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!_anthropic) {
+    if (!process.env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
+    _anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   }
-  return _openai;
+  return _anthropic;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -67,13 +67,35 @@ export interface LegalDocument {
 // Core Functions
 // ──────────────────────────────────────────────────────────────────────────────
 
-/** Generate an embedding vector for a text string. */
+/**
+ * Generate an embedding vector using Voyage AI (Anthropic's recommended embedding provider).
+ * Model: voyage-law-2 (1024 dims, optimised for legal text).
+ * Key: same ANTHROPIC_API_KEY works with api.voyageai.com.
+ */
 export async function embedText(text: string): Promise<number[]> {
-  const response = await getOpenAI().embeddings.create({
-    model: "text-embedding-3-small",
-    input: text.slice(0, 8000),
+  const apiKey = process.env.VOYAGE_API_KEY ?? process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured for embeddings");
+
+  // voyage-law-2: 1024 dims, purpose-built for legal documents
+  const response = await fetch("https://api.voyageai.com/v1/embeddings", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "voyage-law-2",
+      input: [text.slice(0, 8000)],
+    }),
   });
-  return response.data[0].embedding;
+
+  if (!response.ok) {
+    const err = await response.text().catch(() => "");
+    throw new Error(`Voyage AI embedding error ${response.status}: ${err.slice(0, 200)}`);
+  }
+
+  const data = await response.json() as { data: Array<{ embedding: number[] }> };
+  return data.data[0].embedding;
 }
 
 /** Semantic search over the legal knowledge base + case notes. */
@@ -554,28 +576,28 @@ export async function seedInitialData(): Promise<{ added: number; errors: string
       content:
         "1. BAILABLE OFFENCE: Apply at police station (BNSS S.480); if refused, apply to Magistrate. 2. NON-BAILABLE OFFENCE: Regular bail before Magistrate/Sessions Court (BNSS S.483); if rejected, approach HC under S.528. 3. ANTICIPATORY BAIL (BNSS S.484): Apply to Sessions Court first; if rejected, approach HC. 4. BAIL DURING TRIAL: Sessions Court or HC. 5. BAIL PENDING APPEAL: HC or SC. Key points: attach clear facts, case diary, personal circumstances, co-accused bail status.",
       category: "procedural_guide",
-      source: "NyayaSahayak Practice Guide",
+      source: "NyayAI Practice Guide",
     },
     {
       title: "FIR: What to Do When Police Refuse to Register",
       content:
         "If police refuse to register FIR: 1. Approach Superintendent of Police with written complaint (BNSS S.173(4)). 2. Send complaint by post to SP. 3. File private complaint before Magistrate under BNSS S.223. 4. File writ petition in HC seeking directions to register FIR. 5. Complaint to State Human Rights Commission. Lalita Kumari: registration is mandatory for cognizable offences. Refusing officer commits misconduct.",
       category: "procedural_guide",
-      source: "NyayaSahayak Practice Guide",
+      source: "NyayAI Practice Guide",
     },
     {
       title: "Chargesheet Timelines and Default Bail",
       content:
         "Police must file chargesheet within: 60 days (offences punishable with death/life/10+ years), 30 days (other offences). Period begins from first remand date. If chargesheet not filed within time, accused entitled to default bail (BNSS S.187). Default bail is absolute right — court cannot impose conditions. Move default bail application BEFORE chargesheet is filed. Incomplete chargesheets (investigation continues) do not defeat default bail right.",
       category: "procedural_guide",
-      source: "NyayaSahayak Practice Guide",
+      source: "NyayAI Practice Guide",
     },
     {
       title: "Dowry Death — Investigation and Trial Checklist",
       content:
         "Dowry death (BNS S.80 / IPC S.304B): death within 7 years of marriage. Prosecution must prove: (a) death by burns/bodily injury or unnatural circumstances, (b) within 7 years of marriage, (c) cruelty or harassment for dowry before death. Presumption under BSA S.118 / IEA S.113B applies. BNSS mandatory Magistrate inquest. Post-mortem mandatory. Preserve viscera samples. Timeline and call records are critical evidence.",
       category: "procedural_guide",
-      source: "NyayaSahayak Practice Guide",
+      source: "NyayAI Practice Guide",
     },
     {
       title: "Legal Aid — Right to Free Legal Services",

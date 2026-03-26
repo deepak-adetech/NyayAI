@@ -33,7 +33,7 @@ export default function AdminSidebar() {
         </div>
         <div>
           <p className="text-white font-semibold text-sm leading-none">
-            NyayaSahayak
+            NyayAI
           </p>
           <p className="text-white/50 text-xs mt-0.5">Admin Panel</p>
         </div>

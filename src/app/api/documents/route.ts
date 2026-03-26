@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { uploadFile, generateStorageKey, computeChecksum } from "@/lib/storage";
 import { classifyDocument } from "@/lib/ai/documentClassifier";
+import { extractTextWithVision } from "@/lib/ai/visionOCR";
+
+const IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/tiff"]);
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_MIME_TYPES = new Set([
@@ -42,10 +45,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File type not allowed" }, { status: 415 });
     }
 
-    // Verify case belongs to lawyer
-    const case_ = await prisma.case.findFirst({
-      where: { id: caseId, lawyerId: session.user.id! },
-    });
+    // Verify case access
+    const caseWhere: any = { id: caseId };
+    if (role !== "ADMIN") caseWhere.lawyerId = session.user.id!;
+    const case_ = await prisma.case.findFirst({ where: caseWhere });
     if (!case_) return NextResponse.json({ error: "Case not found" }, { status: 404 });
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -78,6 +81,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Vision OCR fallback for scanned PDFs and images
+    let ocrResult: { text: string; confidence: number; language: string } | null = null;
+    const isImage = IMAGE_MIME_TYPES.has(file.type);
+    const isScannedPdf = file.type === "application/pdf" && extractedText.trim().length < 100;
+
+    if (isImage || isScannedPdf) {
+      try {
+        ocrResult = await extractTextWithVision(buffer, file.type, file.name);
+        if (ocrResult.text) {
+          // For scanned PDFs, use OCR text as the extracted text for classification
+          if (!extractedText || extractedText.trim().length < 100) {
+            extractedText = ocrResult.text;
+          }
+        }
+      } catch (e) {
+        console.warn("[VisionOCR] Fallback failed:", e);
+      }
+    }
+
     // AI classification (non-blocking — fire and forget for large files)
     let classification = null;
     try {
@@ -102,9 +124,14 @@ export async function POST(req: NextRequest) {
         fileSize: file.size,
         mimeType: file.type,
         storagePath: storageKey,
-        ocrStatus: extractedText ? "completed" : "pending",
-        ocrText: extractedText || null,
-        ocrLanguage: classification?.language,
+        ocrStatus: ocrResult?.text
+          ? "completed"
+          : extractedText
+            ? "completed"
+            : "pending",
+        ocrText: ocrResult?.text || extractedText || null,
+        ocrLanguage: ocrResult?.language ?? classification?.language,
+        ocrConfidence: ocrResult?.confidence ?? null,
         extractedSections: classification?.extractedSections ?? [],
         extractedEntities: classification
           ? {

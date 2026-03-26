@@ -1,5 +1,5 @@
 /**
- * Local File Sync Service — NyayaSahayak
+ * Local File Sync Service — NyayAI
  *
  * Works like Google Drive sync:
  * 1. Lawyer registers local folders to watch

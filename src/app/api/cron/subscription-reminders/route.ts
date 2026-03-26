@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
           await sendEmail({
             to: sub.user.email,
             toName: sub.user.name,
-            subject: `Your NyayaSahayak trial ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
+            subject: `Your NyayAI trial ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"}`,
             html,
           });
           results.trialReminders++;
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
         await sendEmail({
           to: sub.user.email,
           toName: sub.user.name,
-          subject: "Your NyayaSahayak trial has ended. Reactivate with 20% off.",
+          subject: "Your NyayAI trial has ended. Reactivate with 20% off.",
           html,
         });
         results.expiryEmails++;
@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
         await sendEmail({
           to: sub.user.email,
           toName: sub.user.name,
-          subject: `Your NyayaSahayak subscription renews in 3 days`,
+          subject: `Your NyayAI subscription renews in 3 days`,
           html,
         });
         results.renewalReminders++;
@@ -153,7 +153,7 @@ export async function GET(req: NextRequest) {
         await sendEmail({
           to: sub.user.email,
           toName: sub.user.name,
-          subject: `${sub.user.name}, here is 30% off to come back to NyayaSahayak`,
+          subject: `${sub.user.name}, here is 30% off to come back to NyayAI`,
           html,
         });
         results.retentionOffers++;

@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   const type = searchParams.get("type");
   const search = searchParams.get("search");
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
-  const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20"));
+  const limit = Math.min(200, parseInt(searchParams.get("limit") ?? "20"));
   const skip = (page - 1) * limit;
 
   const userId = session.user.id;
@@ -158,6 +158,18 @@ export async function POST(req: NextRequest) {
         eventDate: new Date(),
       },
     });
+
+    // Auto-sync hearings from eCourts if CNR is provided
+    if (newCase.cnrNumber) {
+      fetch(`${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/ecourts/sync`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: req.headers.get("cookie") ?? "",
+        },
+        body: JSON.stringify({ caseId: newCase.id }),
+      }).catch(() => {}); // fire and forget
+    }
 
     return NextResponse.json(newCase, { status: 201 });
   } catch (error) {

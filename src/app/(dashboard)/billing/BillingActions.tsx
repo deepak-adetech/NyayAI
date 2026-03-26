@@ -57,7 +57,7 @@ export default function BillingActions({
       const rzp = new (window as any).Razorpay({
         key: data.keyId,
         subscription_id: data.subscriptionId,
-        name: "NyayaSahayak",
+        name: "NyayAI",
         description: `Subscription — ${data.planName}`,
         prefill: { email: data.email },
         theme: { color: "#1e3a5f" },

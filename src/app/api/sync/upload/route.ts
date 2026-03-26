@@ -125,6 +125,24 @@ export async function POST(req: NextRequest) {
       extractedText = buffer.toString("utf-8");
     }
 
+    // Vision OCR fallback for scanned PDFs and images
+    const imageExts = new Set([".jpg", ".jpeg", ".png", ".tiff", ".tif"]);
+    const isImage = imageExts.has(ext);
+    const isScannedPdf = ext === ".pdf" && extractedText.trim().length < 100;
+    let ocrResult: { text: string; confidence: number; language: string } | null = null;
+
+    if (isImage || isScannedPdf) {
+      try {
+        const { extractTextWithVision } = await import("@/lib/ai/visionOCR");
+        ocrResult = await extractTextWithVision(buffer, mimeType, fileName);
+        if (ocrResult.text && (!extractedText || extractedText.trim().length < 100)) {
+          extractedText = ocrResult.text;
+        }
+      } catch (e) {
+        console.warn("[VisionOCR] Fallback failed in sync upload:", e);
+      }
+    }
+
     // AI Classification
     const { classifyDocument, matchDocumentToCase } = await import("@/lib/ai/documentClassifier");
     const classification = await classifyDocument(extractedText, fileName);
@@ -170,9 +188,16 @@ export async function POST(req: NextRequest) {
         fileSize,
         mimeType,
         storagePath: storageKey,
-        ocrStatus: classification.ocrNeeded ? "pending" : "not_needed",
-        ocrText: extractedText || null,
-        ocrLanguage: classification.language,
+        ocrStatus: ocrResult?.text
+          ? "completed"
+          : extractedText
+            ? "completed"
+            : classification.ocrNeeded
+              ? "pending"
+              : "not_needed",
+        ocrText: ocrResult?.text || extractedText || null,
+        ocrLanguage: ocrResult?.language ?? classification.language,
+        ocrConfidence: ocrResult?.confidence ?? null,
         extractedSections: classification.extractedSections,
         extractedEntities: {
           parties: classification.extractedParties,

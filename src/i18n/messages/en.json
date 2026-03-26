@@ -1,0 +1,133 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "cases": "Cases",
+    "documents": "Documents",
+    "hearings": "Hearings",
+    "aiAssistant": "AI Assistant",
+    "tools": "Tools",
+    "sectionMapper": "Section Mapper",
+    "noticeGenerator": "Notice Generator",
+    "bailDrafter": "Bail Drafter",
+    "draftGenerator": "Draft Generator",
+    "fileSync": "File Sync",
+    "invoices": "Invoices",
+    "billing": "Billing",
+    "settings": "Settings",
+    "signOut": "Sign Out"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "submit": "Submit",
+    "generate": "Generate",
+    "copy": "Copy",
+    "download": "Download",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "close": "Close",
+    "view": "View",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "amount": "Amount",
+    "total": "Total",
+    "description": "Description",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address"
+  },
+  "cases": {
+    "title": "Cases",
+    "newCase": "New Case",
+    "caseNumber": "Case Number",
+    "cnrNumber": "CNR Number",
+    "caseType": "Case Type",
+    "court": "Court",
+    "judge": "Judge",
+    "filingDate": "Filing Date",
+    "nextHearing": "Next Hearing",
+    "lastHearing": "Last Hearing",
+    "petitioners": "Petitioners",
+    "respondents": "Respondents",
+    "advocates": "Advocates",
+    "status": {
+      "active": "Active",
+      "disposed": "Disposed",
+      "archived": "Archived",
+      "transferred": "Transferred",
+      "stayed": "Stayed"
+    }
+  },
+  "hearings": {
+    "title": "Hearings",
+    "newHearing": "New Hearing",
+    "hearingDate": "Hearing Date",
+    "purpose": "Purpose",
+    "courtRoom": "Court Room",
+    "orderSummary": "Order Summary"
+  },
+  "documents": {
+    "title": "Documents",
+    "upload": "Upload Document",
+    "type": "Document Type",
+    "fileName": "File Name",
+    "fileSize": "File Size"
+  },
+  "invoices": {
+    "title": "Invoices",
+    "createInvoice": "Create Invoice",
+    "invoiceNumber": "Invoice Number",
+    "client": "Client",
+    "dueDate": "Due Date",
+    "lineItems": "Line Items",
+    "subtotal": "Subtotal",
+    "tax": "Tax (GST)",
+    "grandTotal": "Grand Total",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    }
+  },
+  "ai": {
+    "title": "AI Legal Assistant",
+    "poweredBy": "Powered by Claude AI",
+    "sectionFinder": "BNS/IPC Section Finder",
+    "legalResearch": "Legal Research",
+    "caseSummary": "Case Summary",
+    "limitationCalculator": "Limitation Calculator",
+    "generateReport": "Generate Report",
+    "calculating": "Calculating..."
+  },
+  "tools": {
+    "title": "Legal Tools",
+    "sectionMapper": {
+      "title": "IPC / BNS Section Mapper",
+      "subtitle": "Search any IPC or BNS section to find its equivalent under the new/old law"
+    },
+    "noticeGenerator": {
+      "title": "Legal Notice Generator",
+      "subtitle": "Generate professional legal notices in standard Indian format"
+    },
+    "bailDrafter": {
+      "title": "Bail Application Drafter",
+      "subtitle": "Generate bail applications in proper court format"
+    },
+    "draftGenerator": {
+      "title": "Legal Draft Generator",
+      "subtitle": "Generate plaints, written statements, petitions, and more"
+    }
+  }
+}

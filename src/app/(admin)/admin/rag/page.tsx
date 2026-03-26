@@ -138,7 +138,7 @@ export default function AdminRAGPage() {
             <Brain className="h-6 w-6 text-purple-600" />
             AI Knowledge Base
           </h1>
-          <p className="text-gray-500 text-sm mt-0.5">Manage the RAG legal knowledge base used by NyayaSahayak AI</p>
+          <p className="text-gray-500 text-sm mt-0.5">Manage the RAG legal knowledge base used by NyayAI AI</p>
         </div>
         <button onClick={fetchStats} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
           <RefreshCw className="h-4 w-4" />

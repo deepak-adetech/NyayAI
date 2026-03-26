@@ -45,7 +45,7 @@ export default async function BillingPage() {
         <CreditCard className="h-7 w-7 text-[#1e3a5f]" />
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Billing & Subscription</h1>
-          <p className="text-gray-500 text-sm">Manage your NyayaSahayak subscription</p>
+          <p className="text-gray-500 text-sm">Manage your NyayAI subscription</p>
         </div>
       </div>
 

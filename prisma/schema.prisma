@@ -111,7 +111,7 @@ model User {
   id               String   @id @default(uuid())
   email            String   @unique
   emailVerified    DateTime?
-  phone            String?  @unique
+  phone            String?
   phoneVerified    Boolean  @default(false)
   passwordHash     String
   name             String
@@ -144,9 +144,24 @@ model User {
   invitedClients ClientInvite[]
   localSyncFolders LocalSyncFolder[]
   agentTokens      AgentToken[]
+  clientProfile    ClientProfile?
 
   @@index([email])
   @@index([role])
+}
+
+model ClientProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization String?
+  gstNumber    String?
+  panNumber    String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Session {
@@ -294,6 +309,10 @@ model Case {
   aiSummary             String?
   aiSuggestedSections   String[]
   aiRiskAssessment      String?
+  aiCauseOfAction       String?
+  aiSupportingFacts     String?
+  aiParaByParaResponse  String?
+  aiSummaryGeneratedAt  DateTime?
   notes                 String?
   tags                  String[]
   priority              Int        @default(0)
@@ -549,27 +568,45 @@ model CaseTimeline {
 // ============================================================
 
 model Invoice {
-  id            String    @id @default(uuid())
-  lawyerId      String
-  caseId        String?
-  clientName    String
-  clientEmail   String?
-  invoiceNumber String    @unique
-  description   String
-  amountPaise   Int
-  taxPaise      Int       @default(0)
-  totalPaise    Int
-  status        String    @default("draft")
-  dueDate       DateTime?
-  paidAt        DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                     String             @id @default(uuid())
+  lawyerId               String
+  caseId                 String?
+  clientName             String
+  clientEmail            String?
+  clientPhone            String?
+  invoiceNumber          String             @unique
+  description            String
+  amountPaise            Int
+  taxPaise               Int                @default(0)
+  totalPaise             Int
+  status                 String             @default("draft") // draft, sent, paid, overdue, cancelled
+  dueDate                DateTime?
+  paidAt                 DateTime?
+  razorpayPaymentLinkId  String?
+  razorpayPaymentLinkUrl String?
+  upiDeepLink            String?
+  metadata               Json?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
 
-  lawyer User  @relation(fields: [lawyerId], references: [id])
-  case   Case? @relation(fields: [caseId], references: [id])
+  lawyer    User               @relation(fields: [lawyerId], references: [id])
+  case      Case?              @relation(fields: [caseId], references: [id])
+  lineItems InvoiceLineItem[]
 
   @@index([lawyerId])
   @@index([status])
+}
+
+model InvoiceLineItem {
+  id          String  @id @default(uuid())
+  invoiceId   String
+  description String
+  amountPaise Int
+  category    String  @default("fee") // fee, stamp_duty, process_fee, filing_fee, court_fee, other
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
 }
 
 // ============================================================

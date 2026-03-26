@@ -23,72 +23,92 @@ import {
   Globe,
   Award,
   TrendingUp,
+  Receipt,
+  Languages,
+  BookOpen,
+  Monitor,
 } from "lucide-react";
 
 const features = [
   {
     icon: Brain,
-    title: "AI Legal Research",
+    title: "AI Case Analysis with Risk Assessment",
     description:
-      "Identify applicable BNS 2023 or IPC 1860 sections instantly from case facts. AI understands the July 2024 law transition and applies the correct statute automatically.",
+      "Identify applicable BNS 2023 or IPC 1860 sections from case facts with AI-powered risk scoring. Get bail assessment, cognizability analysis, and sentencing range instantly.",
     color: "text-purple-600",
     bg: "bg-purple-50",
   },
   {
-    icon: RefreshCw,
-    title: "eCourts Auto-Sync",
+    icon: Gavel,
+    title: "AI Judge Assessment & Bench Analysis",
     description:
-      "Enter a CNR number and get all case details from eCourts India automatically. Case status, hearing dates, orders, and judgments update in real time without manual checking.",
+      "Analyse judge disposition patterns, past rulings, and bench tendencies. Understand how specific judges rule on similar matters to build stronger courtroom strategy.",
     color: "text-blue-600",
     bg: "bg-blue-50",
   },
   {
-    icon: Briefcase,
-    title: "Smart Case Management",
+    icon: ScanText,
+    title: "Smart Legal Tools",
     description:
-      "Manage Criminal, Civil, Family, Consumer, Labour, Tax, Writ, and Arbitration matters in one place. Full timeline from FIR to final judgment, all organized.",
+      "Section Mapper for BNS/IPC cross-referencing, AI Notice Generator, Bail Application Drafter, and Draft Generator. All powered by Indian law-trained AI models.",
     color: "text-[#1e3a5f]",
     bg: "bg-slate-50",
   },
   {
-    icon: ScanText,
-    title: "Hindi and Regional OCR",
+    icon: RefreshCw,
+    title: "eCourts Live Sync",
     description:
-      "Scan and extract text from FIRs, charge sheets, and court documents in Hindi, Marathi, Gujarati, and other regional languages with high accuracy.",
+      "Automatic hearing capture from eCourts India via CNR number. Case status, hearing dates, orders, and judgments update in real time. No manual checking required.",
     color: "text-orange-600",
     bg: "bg-orange-50",
   },
   {
     icon: Users,
-    title: "Client Portal",
+    title: "Client Portal with Secure Login",
     description:
-      "Give clients secure, read-only access to their own case progress, documents, and upcoming hearing dates. No WhatsApp messages, no manual updates needed.",
+      "Give clients their own secure portal to track case progress, view documents, and check upcoming hearing dates. Reduce repetitive phone calls by over 60%.",
     color: "text-green-600",
     bg: "bg-green-50",
   },
   {
-    icon: Bell,
-    title: "Hearing Reminders",
+    icon: FileText,
+    title: "Document Management with AI Classification",
     description:
-      "Automated SMS, email, and WhatsApp alerts sent 3 days before, 1 day before, and on the morning of every hearing. Never miss a court date again.",
+      "Upload FIRs, chargesheets, orders, and judgments. AI automatically classifies, indexes, and matches documents to the correct case. Hindi and regional language OCR built in.",
     color: "text-yellow-600",
     bg: "bg-yellow-50",
   },
   {
-    icon: FolderSync,
-    title: "Desktop File Sync",
+    icon: Receipt,
+    title: "Invoice & Billing Management",
     description:
-      "Install the NyayaSahayak desktop agent on Windows or Mac. It watches your local folders and automatically uploads documents to the correct case in the cloud.",
+      "Generate GST-compliant invoices, track payments, and send payment reminders via email and WhatsApp. Integrated with Razorpay for seamless online collection.",
     color: "text-teal-600",
     bg: "bg-teal-50",
   },
   {
-    icon: FileText,
-    title: "AI Document Drafting",
+    icon: Languages,
+    title: "Hindi/English Language Support",
     description:
-      "Generate petitions, bail applications, notices, and legal letters in minutes. AI drafts based on your case facts and applicable law, ready for your review.",
+      "Full bilingual support across the platform. Hindi and regional language OCR for FIRs and court documents. RAG-powered legal research across Indian statutes and precedents.",
     color: "text-red-600",
     bg: "bg-red-50",
+  },
+  {
+    icon: BookOpen,
+    title: "RAG-Powered Legal Research",
+    description:
+      "Retrieval-augmented generation trained on BNS, BNSS, BSA, IPC, CrPC, and Indian Evidence Act. Ask questions in natural language and get grounded, citation-backed answers.",
+    color: "text-indigo-600",
+    bg: "bg-indigo-50",
+  },
+  {
+    icon: Monitor,
+    title: "Desktop Sync Agent",
+    description:
+      "Install the NyayAI desktop agent on Windows or Mac. It watches your local folders and automatically uploads documents to the correct case in the cloud.",
+    color: "text-cyan-600",
+    bg: "bg-cyan-50",
   },
 ];
 
@@ -174,7 +194,7 @@ const testimonials = [
     name: "Adv. Ramesh Bhosale",
     location: "Pune District Court",
     practice: "Criminal Law",
-    text: "I handle over 80 criminal cases simultaneously. Before NyayaSahayak I was using a mix of WhatsApp groups, Excel sheets, and sticky notes. Now everything is centralized. The eCourts sync alone saves me 2 hours every day.",
+    text: "I handle over 80 criminal cases simultaneously. Before NyayAI I was using a mix of WhatsApp groups, Excel sheets, and sticky notes. Now everything is centralized. The eCourts sync alone saves me 2 hours every day.",
     rating: 5,
     initials: "RB",
   },
@@ -198,12 +218,12 @@ const testimonials = [
 
 const faqs = [
   {
-    q: "How is NyayaSahayak priced compared to other legal software?",
-    a: "NyayaSahayak is priced approximately 40% below the market average for Indian legal SaaS platforms. Our Starter plan at Rs 999 per month gives you features that competitors charge Rs 1,500 to Rs 2,000 for. We believe professional legal tools should be accessible to all advocates, not just large firms.",
+    q: "How is NyayAI priced compared to other legal software?",
+    a: "NyayAI is priced approximately 40% below the market average for Indian legal SaaS platforms. Our Starter plan at Rs 999 per month gives you features that competitors charge Rs 1,500 to Rs 2,000 for. We believe professional legal tools should be accessible to all advocates, not just large firms.",
   },
   {
     q: "How does the eCourts integration work?",
-    a: "You enter your case's CNR (Case Number Record) number when creating a case in NyayaSahayak. Our system calls the eCourts India API to auto-populate all case details: parties, acts charged, hearing history, orders, and judgment status. We then poll for updates daily and notify you when anything changes.",
+    a: "You enter your case's CNR (Case Number Record) number when creating a case in NyayAI. Our system calls the eCourts India API to auto-populate all case details: parties, acts charged, hearing history, orders, and judgment status. We then poll for updates daily and notify you when anything changes.",
   },
   {
     q: "Does the AI support both BNS 2023 and IPC 1860?",
@@ -228,8 +248,8 @@ export default function HomePage() {
         <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
             <Scale className="h-7 w-7 text-[#1e3a5f]" />
-            <span className="text-[#1e3a5f] text-xl font-bold tracking-tight">NyayaSahayak</span>
-            <span className="text-gray-400 text-sm ml-1 hidden sm:inline">न्यायसहायक</span>
+            <span className="text-[#1e3a5f] text-xl font-bold tracking-tight">NyayAI</span>
+            <span className="text-gray-400 text-sm ml-1 hidden sm:inline">AI-Powered Legal Intelligence</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
             <Link href="#features" className="hover:text-[#1e3a5f] transition-colors">Features</Link>
@@ -256,18 +276,18 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-blue-700 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <Zap className="h-3.5 w-3.5" />
-            Now with live eCourts India sync and BNS 2023 AI
+            AI-Powered Legal Intelligence for Indian Advocates
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold text-[#1e3a5f] tracking-tight leading-tight mb-6">
-            India&apos;s Most Complete<br />
+            NyayAI<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1e3a5f] to-blue-500">
-              Legal Case Management
+              AI-Powered Legal Intelligence
             </span>
-            <br />Platform
+            <br />for Indian Advocates
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Manage every case from FIR to final judgment. AI trained on Indian law, live eCourts sync,
-            automated hearing reminders, and a client portal. Built for Indian advocates.
+            From case analysis to courtroom strategy &mdash; NyayAI brings artificial intelligence to every aspect
+            of legal practice. Manage cases, analyse judges, draft documents, and stay ahead with real-time court data.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
             <Link
@@ -323,12 +343,12 @@ export default function HomePage() {
               Indian advocates waste 3+ hours daily on paperwork
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Chasing case status on eCourts, managing files over WhatsApp, manually tracking hearing dates, and drafting repetitive documents by hand. NyayaSahayak eliminates all of it.
+              Chasing case status on eCourts, managing files over WhatsApp, manually tracking hearing dates, and drafting repetitive documents by hand. NyayAI eliminates all of it.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-2xl p-8 border border-red-100">
-              <div className="text-red-600 font-semibold text-sm uppercase tracking-wide mb-4">Before NyayaSahayak</div>
+              <div className="text-red-600 font-semibold text-sm uppercase tracking-wide mb-4">Before NyayAI</div>
               <ul className="space-y-3">
                 {[
                   "Manually check eCourts website for each case daily",
@@ -346,7 +366,7 @@ export default function HomePage() {
               </ul>
             </div>
             <div className="bg-white rounded-2xl p-8 border border-green-100">
-              <div className="text-green-600 font-semibold text-sm uppercase tracking-wide mb-4">After NyayaSahayak</div>
+              <div className="text-green-600 font-semibold text-sm uppercase tracking-wide mb-4">After NyayAI</div>
               <ul className="space-y-3">
                 {[
                   "eCourts syncs automatically. Alerts arrive before you even check",
@@ -375,10 +395,10 @@ export default function HomePage() {
               Everything a modern Indian advocate needs
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Eight powerful modules, fully integrated, working together so you can focus on winning cases rather than managing paperwork.
+              Ten powerful modules, fully integrated, working together so you can focus on winning cases rather than managing paperwork.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
             {features.map((f) => (
               <div key={f.title} className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-md transition-shadow group">
                 <div className={`w-12 h-12 ${f.bg} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
@@ -406,14 +426,14 @@ export default function HomePage() {
                   India&apos;s only legal platform with live eCourts sync
                 </h2>
                 <p className="text-gray-600 mb-8 leading-relaxed">
-                  Stop manually checking the eCourts website for each case. NyayaSahayak connects directly to the eCourts India API, pulling all case data automatically and alerting you the moment anything changes.
+                  Stop manually checking the eCourts website for each case. NyayAI connects directly to the eCourts India API, pulling all case data automatically and alerting you the moment anything changes.
                 </p>
                 <div className="space-y-5">
                   {[
                     {
                       num: "1",
                       title: "Enter the CNR number",
-                      desc: "Add your case CNR when creating a new matter in NyayaSahayak.",
+                      desc: "Add your case CNR when creating a new matter in NyayAI.",
                     },
                     {
                       num: "2",
@@ -478,7 +498,7 @@ export default function HomePage() {
                 AI trained on Indian law.<br />Not generic legal tools.
               </h2>
               <p className="text-blue-200 mb-8 leading-relaxed">
-                Generic AI tools know nothing about BNS 2023 or the IPC-to-BNS transition. NyayaSahayak&apos;s AI is built specifically for Indian advocates, trained on Indian statutes, procedural codes, and Supreme Court guidelines.
+                Generic AI tools know nothing about BNS 2023 or the IPC-to-BNS transition. NyayAI&apos;s AI is built specifically for Indian advocates, trained on Indian statutes, procedural codes, and Supreme Court guidelines.
               </p>
               <ul className="space-y-3">
                 {[
@@ -633,7 +653,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-[#1e3a5f] mb-4">Trusted by advocates across India</h2>
-            <p className="text-gray-600">From district courts to High Courts, advocates rely on NyayaSahayak every day.</p>
+            <p className="text-gray-600">From district courts to High Courts, advocates rely on NyayAI every day.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((t) => (
@@ -689,7 +709,7 @@ export default function HomePage() {
             Start your 14-day free trial today
           </h2>
           <p className="text-blue-200 mb-8 leading-relaxed">
-            No credit card required. All features included. Cancel anytime. Join over 1,000 advocates who are already managing their practice smarter with NyayaSahayak.
+            No credit card required. All features included. Cancel anytime. Join over 1,000 advocates who are already managing their practice smarter with NyayAI.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -719,10 +739,10 @@ export default function HomePage() {
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-3">
                 <Scale className="h-6 w-6 text-[#1e3a5f]" />
-                <span className="font-bold text-[#1e3a5f]">NyayaSahayak</span>
+                <span className="font-bold text-[#1e3a5f]">NyayAI</span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed">
-                India&apos;s most complete legal case management platform for modern advocates.
+                AI-Powered Legal Intelligence for Indian advocates.
               </p>
             </div>
             <div>
@@ -753,7 +773,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <p className="text-gray-400 text-sm">&copy; 2025 NyayaSahayak. All rights reserved. Made in India for Indian advocates.</p>
+            <p className="text-gray-400 text-sm">&copy; 2025 NyayAI. All rights reserved. Made in India for Indian advocates.</p>
             <div className="flex items-center gap-1 text-gray-400 text-xs">
               <Shield className="h-3.5 w-3.5" />
               Data stored in India. PDPB compliant.

@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center gap-2 mb-1">
             <Scale className="h-6 w-6" />
-            <span className="font-bold text-lg">NyayaSahayak</span>
+            <span className="font-bold text-lg">NyayAI</span>
           </div>
           <div className="text-blue-300 text-xs">Admin Panel</div>
         </div>

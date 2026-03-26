@@ -58,7 +58,7 @@ function LoginForm() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-3">
             <Scale className="h-8 w-8 text-[#1e3a5f]" />
-            <span className="text-2xl font-bold text-[#1e3a5f]">NyayaSahayak</span>
+            <span className="text-2xl font-bold text-[#1e3a5f]">NyayAI</span>
           </div>
           <p className="text-gray-500 text-sm">Sign in to your legal workspace</p>
         </div>

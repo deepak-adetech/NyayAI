@@ -36,7 +36,13 @@ export default async function CasesPage({
   const [cases, total] = await Promise.all([
     prisma.case.findMany({
       where,
-      include: { _count: { select: { documents: true, hearings: true } } },
+      include: {
+        _count: { select: { documents: true, hearings: true } },
+        clients: {
+          include: { client: { select: { name: true } } },
+          take: 2,
+        },
+      },
       orderBy: [{ priority: "desc" }, { nextHearingDate: "asc" }, { updatedAt: "desc" }],
       skip,
       take: limit,
@@ -122,6 +128,7 @@ export default async function CasesPage({
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-3 uppercase">Case</th>
+                <th className="text-left text-xs font-medium text-gray-500 px-4 py-3 uppercase">Client</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-3 uppercase">Type</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-3 uppercase">Status</th>
                 <th className="text-left text-xs font-medium text-gray-500 px-4 py-3 uppercase">Next Hearing</th>
@@ -142,7 +149,28 @@ export default async function CasesPage({
                         {c.caseNumber && `${c.caseNumber} • `}
                         {c.courtName ?? c.courtDistrict ?? ""}
                       </p>
+                      {(c.bnsSections?.length > 0 || c.ipcSections?.length > 0) && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {c.bnsSections?.map((s: string) => (
+                            <span key={`bns-${s}`} className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-medium">
+                              BNS {s}
+                            </span>
+                          ))}
+                          {c.ipcSections?.map((s: string) => (
+                            <span key={`ipc-${s}`} className="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded font-medium">
+                              IPC {s}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-gray-600">
+                      {c.clients?.length > 0
+                        ? c.clients.map((cc: any) => cc.client.name).join(", ")
+                        : <span className="text-gray-400">—</span>}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-xs text-gray-600">{c.caseType}</span>

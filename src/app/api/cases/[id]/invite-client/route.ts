@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+import { sendEmail } from "@/lib/email/zepto";
 
 const inviteSchema = z.object({
   email: z.string().email(),
@@ -26,10 +27,10 @@ export async function POST(
   const role = (session.user as any).role as string;
   if (role === "CLIENT") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Verify case belongs to lawyer
-  const case_ = await prisma.case.findFirst({
-    where: { id: id, lawyerId: session.user.id! },
-  });
+  // Verify case access (ADMIN can access any case)
+  const caseWhere: any = { id };
+  if (role !== "ADMIN") caseWhere.lawyerId = session.user.id!;
+  const case_ = await prisma.case.findFirst({ where: caseWhere });
   if (!case_) return NextResponse.json({ error: "Case not found" }, { status: 404 });
 
   try {
@@ -38,6 +39,8 @@ export async function POST(
 
     // Check if user already exists
     let clientUser = await prisma.user.findUnique({ where: { email } });
+    let tempPassword: string | null = null;
+    let isNewUser = false;
 
     if (clientUser) {
       // Ensure the user is a CLIENT role or can be connected
@@ -49,7 +52,8 @@ export async function POST(
       }
     } else {
       // Create a new CLIENT user with a temporary password
-      const tempPassword = uuidv4().replace(/-/g, "").slice(0, 12) + "A1!";
+      isNewUser = true;
+      tempPassword = uuidv4().replace(/-/g, "").slice(0, 12) + "A1!";
       const passwordHash = await bcrypt.hash(tempPassword, 12);
 
       // Find starter plan
@@ -61,8 +65,9 @@ export async function POST(
         data: {
           email,
           name,
-          phone: phone || undefined,
+          phone: phone && phone.trim().length > 0 ? phone.trim() : undefined,
           passwordHash,
+          emailVerified: new Date(), // Lawyer-invited clients are pre-verified
           role: "CLIENT",
           subscription: starterPlan
             ? {
@@ -137,10 +142,88 @@ export async function POST(
       },
     });
 
+    // Send welcome email with portal login details
+    const appUrl = (process.env.NEXTAUTH_URL ?? "https://case.ade-technologies.com").replace(/\/$/, "");
+    const portalUrl = `${appUrl}/portal/login`;
+
+    const emailHtml = isNewUser && tempPassword
+      ? `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"/></head>
+        <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+          <div style="max-width:560px;margin:0 auto;padding:20px;">
+            <div style="text-align:center;padding:16px 0 8px;">
+              <span style="font-size:22px;font-weight:700;color:#1e3a5f;">⚖ NyayAI</span>
+            </div>
+            <div style="background:white;border-radius:12px;padding:32px;border:1px solid #e2e8f0;margin:16px 0;">
+              <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">You've been added to a case</h2>
+              <p style="color:#475569;margin:0 0 16px;line-height:1.6;">
+                Hi <strong>${name}</strong>, your lawyer has granted you access to view your case details through the NyayAI Client Portal.
+              </p>
+              <div style="background:#eff6ff;border-left:4px solid #1e3a5f;border-radius:4px;padding:16px;margin:20px 0;">
+                <p style="margin:0 0 8px;font-weight:600;color:#1e3a5f;font-size:14px;">Your Login Credentials</p>
+                <p style="margin:0 0 6px;color:#334155;font-size:14px;"><strong>Portal URL:</strong> <a href="${portalUrl}" style="color:#1e3a5f;">${portalUrl}</a></p>
+                <p style="margin:0 0 6px;color:#334155;font-size:14px;"><strong>Email:</strong> ${email}</p>
+                <p style="margin:0;color:#334155;font-size:14px;"><strong>Temporary Password:</strong> <span style="font-family:monospace;background:#f1f5f9;padding:2px 6px;border-radius:4px;">${tempPassword}</span></p>
+              </div>
+              <p style="color:#64748b;font-size:13px;margin:0 0 16px;">Please change your password after your first login for security.</p>
+              <div style="text-align:center;margin:24px 0;">
+                <a href="${portalUrl}" style="display:inline-block;background:#1e3a5f;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;">Access Client Portal</a>
+              </div>
+              <p style="color:#94a3b8;font-size:12px;margin:16px 0 0;">Through the portal you can view your case details, upcoming hearings, and documents your lawyer shares with you.</p>
+            </div>
+            <div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:24px;">
+              <p>NyayAI · AI-Powered Legal Intelligence</p>
+              <p>© ${new Date().getFullYear()} NyayAI. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+      : `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"/></head>
+        <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+          <div style="max-width:560px;margin:0 auto;padding:20px;">
+            <div style="text-align:center;padding:16px 0 8px;">
+              <span style="font-size:22px;font-weight:700;color:#1e3a5f;">⚖ NyayAI</span>
+            </div>
+            <div style="background:white;border-radius:12px;padding:32px;border:1px solid #e2e8f0;margin:16px 0;">
+              <h2 style="margin:0 0 8px;font-size:22px;color:#1e293b;">You've been added to a new case</h2>
+              <p style="color:#475569;margin:0 0 16px;line-height:1.6;">
+                Hi <strong>${name}</strong>, your lawyer has added you to a case on NyayAI. Log in to the client portal to view your case details.
+              </p>
+              <div style="text-align:center;margin:24px 0;">
+                <a href="${portalUrl}" style="display:inline-block;background:#1e3a5f;color:white;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:15px;">Access Client Portal</a>
+              </div>
+              <p style="color:#64748b;font-size:13px;">Portal URL: <a href="${portalUrl}" style="color:#1e3a5f;">${portalUrl}</a></p>
+            </div>
+            <div style="text-align:center;color:#94a3b8;font-size:12px;margin-top:24px;">
+              <p>NyayAI · AI-Powered Legal Intelligence</p>
+              <p>© ${new Date().getFullYear()} NyayAI. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+    // Fire and forget — don't block response on email
+    sendEmail({
+      to: email,
+      toName: name,
+      subject: isNewUser
+        ? "You've been added to a case — NyayAI Client Portal Access"
+        : "Case access updated — NyayAI",
+      html: emailHtml,
+    }).catch((err) => console.error("[invite-client] Email send failed:", err));
+
     return NextResponse.json({
       success: true,
       clientId: clientUser.id,
-      message: `Client ${name} has been invited. They can log in at /portal/login`,
+      isNewUser,
+      message: `Client ${name} has been invited. A welcome email has been sent to ${email}.`,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

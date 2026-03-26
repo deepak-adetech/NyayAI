@@ -137,7 +137,7 @@ export default async function DashboardPage() {
             <Link href="/billing" className="underline font-medium">
               Upgrade now
             </Link>{" "}
-            to continue using NyayaSahayak.
+            to continue using NyayAI.
           </p>
         </div>
       )}

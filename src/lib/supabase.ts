@@ -1,5 +1,5 @@
 /**
- * Supabase Client for NyayaSahayak RAG System
+ * Supabase Client for NyayAI RAG System
  * Uses pgvector for semantic search over Indian legal documents.
  */
 import { createClient } from "@supabase/supabase-js";
