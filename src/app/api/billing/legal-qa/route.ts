@@ -12,10 +12,12 @@ const PLANS = {
 
 type PlanKey = keyof typeof PLANS;
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+function getRazorpay() {
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID!,
+    key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  });
+}
 
 // POST /api/billing/legal-qa — create Razorpay order
 export async function POST(req: NextRequest) {
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest) {
 
   const { amountPaise, label } = PLANS[plan];
 
+  const razorpay = getRazorpay();
   const order = await razorpay.orders.create({
     amount: amountPaise,
     currency: "INR",
