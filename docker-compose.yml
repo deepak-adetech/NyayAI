@@ -1,12 +1,32 @@
 services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: nyaya_ollama
+    restart: always
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - n8n_default
+    # GPU support (uncomment if server has NVIDIA GPU):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
+
   nyayasahayak:
     image: nyayasahayak:latest
     container_name: nyayasahayak
     restart: always
     env_file:
       - .env
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - LEGAL_LLM_MODEL=hf.co/Ambuj-Tripathi/Indian-Legal-Llama-GGUF
     volumes:
       - nyaya_storage:/app/storage
+    depends_on:
+      - ollama
     networks:
       - n8n_default
     labels:
@@ -25,6 +45,7 @@ services:
 
 volumes:
   nyaya_storage:
+  ollama_models:
 
 networks:
   n8n_default:

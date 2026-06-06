@@ -252,6 +252,10 @@ export default function HomePage() {
             <span className="text-gray-400 text-sm ml-1 hidden sm:inline">AI-Powered Legal Intelligence</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+            <Link href="/ask" className="text-[#1e3a5f] font-semibold hover:underline transition-colors flex items-center gap-1">
+              <BookOpen className="w-4 h-4" />
+              Ask Legal Q&A
+            </Link>
             <Link href="#features" className="hover:text-[#1e3a5f] transition-colors">Features</Link>
             <Link href="#ecourts" className="hover:text-[#1e3a5f] transition-colors">eCourts</Link>
             <Link href="#pricing" className="hover:text-[#1e3a5f] transition-colors">Pricing</Link>
