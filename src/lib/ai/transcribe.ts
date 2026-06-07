@@ -32,17 +32,20 @@ export async function transcribeAudio(
     throw new Error(`Whisper error ${res.status}: ${await res.text().catch(() => "")}`);
   }
 
-  const ct = res.headers.get("content-type") ?? "";
-  let text = "";
+  const raw = await res.text();
+  let text = raw.trim();
   let language: string | null = null;
 
-  if (ct.includes("application/json")) {
-    const data = (await res.json()) as { text?: string; language?: string };
-    text = (data.text ?? "").trim();
-    language = data.language ?? null;
-  } else {
-    // Some configs return plain text
-    text = (await res.text()).trim();
+  // The ASR webservice returns JSON ({ text, language, segments }) but sometimes
+  // with a non-JSON content-type, so parse defensively regardless of the header.
+  try {
+    const data = JSON.parse(raw) as { text?: string; language?: string };
+    if (data && typeof data === "object") {
+      if (typeof data.text === "string") text = data.text.trim();
+      if (typeof data.language === "string") language = data.language;
+    }
+  } catch {
+    // plain-text transcription — keep `raw`
   }
 
   return { text, language };
