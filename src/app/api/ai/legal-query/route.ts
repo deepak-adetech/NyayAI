@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { answerLegalQuestion } from "@/lib/ai/legal-llm";
 import { z } from "zod";
 
-const FREE_DAILY_LIMIT = 5;
+const GUEST_DAILY_LIMIT = 5; // not logged in
+const MEMBER_DAILY_LIMIT = 15; // logged in with verified email or social login
 
 const schema = z.object({
   question: z.string().min(5).max(2000),
@@ -30,6 +31,26 @@ async function countTodayQueries(userId: string | null, ip: string): Promise<num
   return prisma.legalQuery.count({
     where: { ipAddress: ip, userId: null, createdAt: { gte: startOfDay } },
   });
+}
+
+// Logged-in users with a verified email OR a social login get a higher free
+// daily allowance. Everyone else (guests) gets the base guest limit.
+async function getDailyLimit(userId: string | null): Promise<number> {
+  if (!userId) return GUEST_DAILY_LIMIT;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      emailVerified: true,
+      accounts: { select: { provider: true } },
+    },
+  });
+  if (!user) return GUEST_DAILY_LIMIT;
+
+  const hasVerifiedEmail = user.emailVerified != null;
+  const hasSocialLogin = user.accounts.some((a) => a.provider !== "credentials");
+
+  return hasVerifiedEmail || hasSocialLogin ? MEMBER_DAILY_LIMIT : GUEST_DAILY_LIMIT;
 }
 
 async function hasUnlimitedAccess(userId: string | null): Promise<boolean> {
@@ -66,16 +87,20 @@ export async function POST(req: NextRequest) {
 
   // Check if the user has unlimited access
   const unlimited = await hasUnlimitedAccess(userId);
+  const limit = unlimited ? Infinity : await getDailyLimit(userId);
 
   if (!unlimited) {
     const used = await countTodayQueries(userId, ip);
-    if (used >= FREE_DAILY_LIMIT) {
+    if (used >= limit) {
       return NextResponse.json(
         {
           error: "daily_limit_reached",
           used,
-          limit: FREE_DAILY_LIMIT,
-          message: `You've used all ${FREE_DAILY_LIMIT} free questions for today. Upgrade to ask unlimited questions.`,
+          limit,
+          loggedIn: !!userId,
+          message: userId
+            ? `You've used all ${limit} free questions for today. Upgrade to ask unlimited questions.`
+            : `You've used all ${limit} free questions for today. Sign in for ${MEMBER_DAILY_LIMIT} a day, or upgrade for unlimited.`,
         },
         { status: 429 }
       );
@@ -106,7 +131,8 @@ export async function POST(req: NextRequest) {
       answer,
       modelUsed,
       questionsUsedToday: unlimited ? null : used,
-      questionsRemainingToday: unlimited ? null : Math.max(0, FREE_DAILY_LIMIT - used),
+      questionsRemainingToday: unlimited ? null : Math.max(0, limit - used),
+      dailyLimit: unlimited ? null : limit,
       unlimited,
     });
   } catch (err) {
@@ -123,12 +149,15 @@ export async function GET(req: NextRequest) {
   const ip = getIp(req);
 
   const unlimited = await hasUnlimitedAccess(userId);
+  const limit = unlimited ? 0 : await getDailyLimit(userId);
   const used = unlimited ? 0 : await countTodayQueries(userId, ip);
 
   return NextResponse.json({
     unlimited,
+    loggedIn: !!userId,
     questionsUsedToday: unlimited ? null : used,
-    questionsRemainingToday: unlimited ? null : Math.max(0, FREE_DAILY_LIMIT - used),
-    dailyLimit: FREE_DAILY_LIMIT,
+    questionsRemainingToday: unlimited ? null : Math.max(0, limit - used),
+    dailyLimit: unlimited ? null : limit,
+    memberDailyLimit: MEMBER_DAILY_LIMIT,
   });
 }
