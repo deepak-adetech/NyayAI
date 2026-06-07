@@ -9,6 +9,8 @@ const MEMBER_DAILY_LIMIT = 15; // logged in with verified email or social login
 
 const schema = z.object({
   question: z.string().min(5).max(2000),
+  // ISO language code from speech transcription (e.g. "hi", "ta"); optional.
+  language: z.string().max(10).optional(),
 });
 
 function getIp(req: NextRequest): string {
@@ -76,14 +78,14 @@ export async function POST(req: NextRequest) {
   const userId = session?.user?.id ?? null;
   const ip = getIp(req);
 
-  let body: { question: string };
+  let body: { question: string; language?: string };
   try {
     body = schema.parse(await req.json());
   } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const { question } = body;
+  const { question, language } = body;
 
   // Check if the user has unlimited access
   const unlimited = await hasUnlimitedAccess(userId);
@@ -117,7 +119,7 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    const { answer, modelUsed, tokensUsed } = await answerLegalQuestion(question);
+    const { answer, modelUsed, tokensUsed } = await answerLegalQuestion(question, language);
 
     // Update record with answer
     await prisma.legalQuery.update({

@@ -22,7 +22,31 @@ Rules:
 3. Explain next practical steps the person can take.
 4. Add a disclaimer: "This is general information, not legal advice. Consult a qualified advocate."
 5. Keep answers clear and accessible — assume the user is not a lawyer.
-6. Respond in the same language the user writes in (Hindi or English).`;
+6. LANGUAGE: Respond ENTIRELY in the SAME language the user asked in. The user may write or speak in any Indian language — Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Odia, Urdu, Assamese — or English. Match their language and script exactly. Do not switch to English unless they wrote in English.`;
+
+// Maps Whisper ISO language codes to a human name for the model directive.
+const LANGUAGE_NAMES: Record<string, string> = {
+  hi: "Hindi",
+  en: "English",
+  ta: "Tamil",
+  te: "Telugu",
+  bn: "Bengali",
+  mr: "Marathi",
+  gu: "Gujarati",
+  kn: "Kannada",
+  ml: "Malayalam",
+  pa: "Punjabi",
+  or: "Odia",
+  ur: "Urdu",
+  as: "Assamese",
+  ne: "Nepali",
+  sa: "Sanskrit",
+};
+
+export function languageName(code?: string | null): string | null {
+  if (!code) return null;
+  return LANGUAGE_NAMES[code.toLowerCase()] ?? null;
+}
 
 interface OllamaChatMessage {
   role: "system" | "user" | "assistant";
@@ -35,9 +59,17 @@ interface OllamaResponse {
   eval_count?: number;
 }
 
-async function callOllama(question: string): Promise<{ answer: string; tokens: number; model: string }> {
+async function callOllama(
+  question: string,
+  languageHint?: string | null
+): Promise<{ answer: string; tokens: number; model: string }> {
+  const langName = languageName(languageHint);
+  const system = langName
+    ? `${PUBLIC_LEGAL_SYSTEM_PROMPT}\n\nThe user is asking in ${langName}. You MUST write your entire answer in ${langName}.`
+    : PUBLIC_LEGAL_SYSTEM_PROMPT;
+
   const messages: OllamaChatMessage[] = [
-    { role: "system", content: PUBLIC_LEGAL_SYSTEM_PROMPT },
+    { role: "system", content: system },
     { role: "user", content: question },
   ];
 
@@ -76,14 +108,17 @@ export class LegalModelUnavailableError extends Error {
   }
 }
 
-export async function answerLegalQuestion(question: string): Promise<{
+export async function answerLegalQuestion(
+  question: string,
+  languageHint?: string | null
+): Promise<{
   answer: string;
   modelUsed: string;
   tokensUsed: number;
 }> {
   // Indian Legal LLaMA via Ollama is the sole answer source (no Claude fallback).
   try {
-    const result = await callOllama(question);
+    const result = await callOllama(question, languageHint);
     return {
       answer: result.answer,
       modelUsed: result.model,
