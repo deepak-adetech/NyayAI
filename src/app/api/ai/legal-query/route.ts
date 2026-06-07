@@ -136,10 +136,16 @@ export async function POST(req: NextRequest) {
       unlimited,
     });
   } catch (err) {
-    // Clean up the pending record on failure
+    // Clean up the pending record on failure (don't count it against quota)
     await prisma.legalQuery.delete({ where: { id: record.id } }).catch(() => {});
     console.error("[legal-query] LLM error:", err);
-    return NextResponse.json({ error: "AI service unavailable. Please try again." }, { status: 503 });
+    return NextResponse.json(
+      {
+        error:
+          "The legal AI model is warming up or temporarily unavailable. Please try again in a few seconds.",
+      },
+      { status: 503 }
+    );
   }
 }
 

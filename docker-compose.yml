@@ -22,7 +22,7 @@ services:
       - .env
     environment:
       - OLLAMA_URL=http://ollama:11434
-      - LEGAL_LLM_MODEL=hf.co/Ambuj-Tripathi/Indian-Legal-Llama-GGUF
+      - LEGAL_LLM_MODEL=hf.co/invincibleambuj/Ambuj-Tripathi-Indian-Legal-Llama-GGUF:Q4_K_M
     volumes:
       - nyaya_storage:/app/storage
     depends_on:

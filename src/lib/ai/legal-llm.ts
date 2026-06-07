@@ -1,7 +1,7 @@
-import { callClaude, LEGAL_SYSTEM_PROMPT } from "./anthropic";
-
 const OLLAMA_URL = process.env.OLLAMA_URL ?? "http://ollama:11434";
-const LEGAL_LLM_MODEL = process.env.LEGAL_LLM_MODEL ?? "hf.co/Ambuj-Tripathi/Indian-Legal-Llama-GGUF";
+const LEGAL_LLM_MODEL =
+  process.env.LEGAL_LLM_MODEL ??
+  "hf.co/invincibleambuj/Ambuj-Tripathi-Indian-Legal-Llama-GGUF:Q4_K_M";
 
 const PUBLIC_LEGAL_SYSTEM_PROMPT = `You are NyayAI, a free public legal assistant specialising in Indian law. You answer questions from the general public — not just lawyers.
 
@@ -48,9 +48,10 @@ async function callOllama(question: string): Promise<{ answer: string; tokens: n
       model: LEGAL_LLM_MODEL,
       messages,
       stream: false,
-      options: { temperature: 0.3, num_predict: 2048 },
+      // num_predict capped for CPU inference latency (1B model, no GPU)
+      options: { temperature: 0.3, num_predict: 1024 },
     }),
-    signal: AbortSignal.timeout(120_000),
+    signal: AbortSignal.timeout(180_000),
   });
 
   if (!res.ok) {
@@ -67,12 +68,20 @@ async function callOllama(question: string): Promise<{ answer: string; tokens: n
   };
 }
 
+export class LegalModelUnavailableError extends Error {
+  constructor(cause: string) {
+    super("LEGAL_MODEL_UNAVAILABLE");
+    this.name = "LegalModelUnavailableError";
+    this.cause = cause;
+  }
+}
+
 export async function answerLegalQuestion(question: string): Promise<{
   answer: string;
   modelUsed: string;
   tokensUsed: number;
 }> {
-  // Try the Indian Legal LLaMA model first
+  // Indian Legal LLaMA via Ollama is the sole answer source (no Claude fallback).
   try {
     const result = await callOllama(question);
     return {
@@ -82,14 +91,7 @@ export async function answerLegalQuestion(question: string): Promise<{
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn("[legal-llm] Ollama unavailable, falling back to Claude:", msg);
+    console.error("[legal-llm] Indian Legal LLaMA (Ollama) failed:", msg);
+    throw new LegalModelUnavailableError(msg);
   }
-
-  // Fallback to Claude
-  const answer = await callClaude(question, PUBLIC_LEGAL_SYSTEM_PROMPT, false);
-  return {
-    answer,
-    modelUsed: "claude-sonnet-4-6",
-    tokensUsed: 0,
-  };
 }
