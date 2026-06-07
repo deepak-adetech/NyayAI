@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Scale, ArrowUp, Loader2, AlertTriangle, Unlock, ChevronDown, ChevronUp, Sparkles, LogIn, Mic, Square } from "lucide-react";
+import { Scale, ArrowUp, Loader2, AlertTriangle, Unlock, ChevronDown, ChevronUp, LogIn, Mic, Square, MapPin, Users } from "lucide-react";
+import LawyerCard, { type LawyerCardData } from "@/components/LawyerCard";
+import { specialtyLabel } from "@/lib/specialty";
 
 interface QuotaInfo {
   unlimited: boolean;
@@ -55,6 +57,12 @@ export default function AskLegalPage() {
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Lawyer suggestions (shown after an answer) ──
+  const [suggestedLawyers, setSuggestedLawyers] = useState<LawyerCardData[]>([]);
+  const [suggestedSpecialty, setSuggestedSpecialty] = useState<string | null>(null);
+  const [lawyersLoading, setLawyersLoading] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   function refreshQuota() {
     fetch("/api/ai/legal-query")
@@ -113,6 +121,10 @@ export default function AskLegalPage() {
       setExpandedIdx(0);
       setQuestion("");
       setDetectedLanguage(null);
+
+      // Offer relevant lawyers for this question's legal area
+      setSuggestedSpecialty(data.specialty ?? null);
+      fetchLawyers(data.specialty ?? null);
 
       setQuota((prev) =>
         prev
@@ -213,6 +225,40 @@ export default function AskLegalPage() {
     }
   }
 
+  async function fetchLawyers(specialty: string | null, c?: { lat: number; lng: number } | null) {
+    setLawyersLoading(true);
+    try {
+      const p = new URLSearchParams();
+      if (specialty && specialty !== "OTHER") p.set("specialty", specialty);
+      p.set("limit", "3");
+      const loc = c ?? coords;
+      if (loc) {
+        p.set("lat", String(loc.lat));
+        p.set("lng", String(loc.lng));
+      }
+      const res = await fetch(`/api/lawyers?${p.toString()}`);
+      const data = await res.json();
+      setSuggestedLawyers(data.lawyers ?? []);
+    } catch {
+      setSuggestedLawyers([]);
+    } finally {
+      setLawyersLoading(false);
+    }
+  }
+
+  function showLawyersNearMe() {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCoords(c);
+        fetchLawyers(suggestedSpecialty, c);
+      },
+      () => {},
+      { timeout: 8000 }
+    );
+  }
+
   // Stop any in-flight recording if the component unmounts
   useEffect(() => () => teardownStream(), []);
 
@@ -249,8 +295,14 @@ export default function AskLegalPage() {
               <span className="text-[13px] text-[#7a7a7a] hidden sm:block tabular-nums">{remainingLabel}</span>
             )}
             <Link
-              href="/lawyers"
+              href="/find-a-lawyer"
               className="text-[13px] text-[#7a7a7a] hover:text-[#1d1d1f] transition-colors hidden sm:block"
+            >
+              Find a lawyer
+            </Link>
+            <Link
+              href="/lawyers"
+              className="text-[13px] text-[#7a7a7a] hover:text-[#1d1d1f] transition-colors hidden md:block"
             >
               For Lawyers
             </Link>
@@ -277,18 +329,10 @@ export default function AskLegalPage() {
 
       {/* ── HERO: full-bleed, the search is the centrepiece ── */}
       <section className="relative -mt-14 pt-14">
-        <div className="mx-auto max-w-[1100px] px-5 sm:px-8 pt-16 sm:pt-24 pb-14 sm:pb-20">
-          {/* small eyebrow */}
-          <div className="flex justify-center">
-            <span className="inline-flex items-center gap-1.5 text-[13px] text-[#6e6e73] rounded-full border border-[#e0e0e0] bg-[#fafafc] px-3.5 py-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#1e3a5f]" />
-              Trained on Indian legal texts
-            </span>
-          </div>
-
+        <div className="mx-auto max-w-[1100px] px-5 sm:px-8 pt-6 sm:pt-10 pb-14 sm:pb-20">
           {/* headline */}
           <h1
-            className="mt-7 text-center font-semibold text-[#1d1d1f] text-[44px] leading-[1.05] sm:text-[68px] sm:leading-[1.04]"
+            className="text-center font-semibold text-[#1d1d1f] text-[44px] leading-[1.05] sm:text-[68px] sm:leading-[1.04]"
             style={{ fontFamily: displayFont, letterSpacing: "-0.025em" }}
           >
             Indian law, answered.
@@ -505,6 +549,69 @@ export default function AskLegalPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Lawyers who can help with this question */}
+            {history.length > 0 && (lawyersLoading || suggestedLawyers.length > 0) && (
+              <div className="mt-8">
+                <div className="flex items-end justify-between gap-3 mb-4">
+                  <div>
+                    <h2 className="text-[12px] font-semibold text-[#9a9aa0] uppercase tracking-[0.08em]">
+                      Talk to a lawyer
+                    </h2>
+                    <p className="text-[13px] text-[#6e6e73] mt-1">
+                      {suggestedSpecialty && suggestedSpecialty !== "OTHER"
+                        ? `${specialtyLabel(suggestedSpecialty)} lawyers who can help — some answer your first questions free.`
+                        : "Lawyers who can help — some answer your first questions free."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={showLawyersNearMe}
+                    className="shrink-0 inline-flex items-center gap-1.5 text-[13px] text-[#0066cc] hover:underline"
+                  >
+                    <MapPin className="w-3.5 h-3.5" />
+                    Near me
+                  </button>
+                </div>
+
+                {lawyersLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-5 h-5 animate-spin text-[#9a9aa0]" />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {suggestedLawyers.map((l) => (
+                      <LawyerCard key={l.id} lawyer={l} />
+                    ))}
+                  </div>
+                )}
+
+                <div className="mt-4 text-center">
+                  <Link
+                    href={`/find-a-lawyer${suggestedSpecialty && suggestedSpecialty !== "OTHER" ? `?specialty=${suggestedSpecialty}` : ""}`}
+                    className="text-[14px] font-medium text-[#0066cc] hover:underline"
+                  >
+                    See all lawyers in the directory →
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Cold-start: no lawyers yet → invite lawyers to join */}
+            {history.length > 0 && !lawyersLoading && suggestedLawyers.length === 0 && (
+              <div className="mt-8 rounded-2xl bg-white border border-[#e0e0e0] px-5 py-4 flex items-center justify-between gap-4">
+                <p className="text-[14px] text-[#1d1d1f] inline-flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#1e3a5f]" />
+                  Are you a lawyer? Get listed and answer questions from people near you.
+                </p>
+                <Link
+                  href="/lawyers/join"
+                  className="shrink-0 text-[13px] font-medium px-3.5 py-2 rounded-full bg-[#1e3a5f] text-white hover:bg-[#162d4a] active:scale-95 transition-all"
+                >
+                  Join free
+                </Link>
               </div>
             )}
           </div>

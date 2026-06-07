@@ -147,6 +147,9 @@ model User {
   clientProfile    ClientProfile?
   legalQueries     LegalQuery[]
   legalQaAccess    LegalQaAccess?
+  lawyerProfile     LawyerProfile?
+  lawyerReviews     LawyerReview[]
+  lawyerConnections LawyerConnection[]
 
   @@index([email])
   @@index([role])
@@ -711,4 +714,83 @@ model LegalQaAccess {
 
   @@index([userId])
   @@index([validUntil])
+}
+
+// ============================================================
+// LAWYER DIRECTORY (public — powers the Q&A "find a lawyer" feature)
+// ============================================================
+
+model LawyerProfile {
+  id                   String    @id @default(uuid())
+  userId               String    @unique
+  slug                 String    @unique
+  fullName             String
+  photoUrl             String?
+  bio                  String?
+  specialties          String[]               // e.g. ["CRIMINAL","FAMILY"]
+  yearsExperience      Int       @default(0)
+  barCouncilNumber     String?
+  barCouncilState      String?
+  languages            String[]               // ["Hindi","English","Tamil"]
+  city                 String?
+  state                String?
+  latitude             Float?
+  longitude            Float?
+  phone                String?
+  publicEmail          String?
+  website              String?
+  willingToAnswerFree  Boolean   @default(false)
+  consultationFeePaise Int?
+  isListed             Boolean   @default(true)
+  isVerified           Boolean   @default(false)
+  questionsAnswered    Int       @default(0)
+  ratingAvg            Float     @default(0)
+  ratingCount          Int       @default(0)
+  lastActiveAt         DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews     LawyerReview[]
+  connections LawyerConnection[]
+
+  @@index([isListed])
+  @@index([city])
+  @@index([willingToAnswerFree])
+  @@index([ratingAvg])
+}
+
+model LawyerReview {
+  id              String   @id @default(uuid())
+  lawyerProfileId String
+  authorUserId    String?
+  authorName      String
+  rating          Int                          // 1..5
+  comment         String?
+  createdAt       DateTime @default(now())
+
+  lawyerProfile LawyerProfile @relation(fields: [lawyerProfileId], references: [id], onDelete: Cascade)
+  author        User?         @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([lawyerProfileId])
+}
+
+model LawyerConnection {
+  id              String   @id @default(uuid())
+  lawyerProfileId String
+  userId          String?
+  ipAddress       String?
+  legalQueryId    String?
+  name            String
+  contact         String                       // phone or email
+  message         String?
+  specialty       String?
+  status          String   @default("pending") // pending | accepted | closed
+  createdAt       DateTime @default(now())
+
+  lawyerProfile LawyerProfile @relation(fields: [lawyerProfileId], references: [id], onDelete: Cascade)
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([lawyerProfileId])
+  @@index([userId])
 }

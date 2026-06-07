@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { answerLegalQuestion } from "@/lib/ai/legal-llm";
+import { classifySpecialty } from "@/lib/specialty";
 import { z } from "zod";
 
 const GUEST_DAILY_LIMIT = 5; // not logged in
@@ -132,6 +133,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       answer,
       modelUsed,
+      specialty: classifySpecialty(question), // legal area, for lawyer matching
       questionsUsedToday: unlimited ? null : used,
       questionsRemainingToday: unlimited ? null : Math.max(0, limit - used),
       dailyLimit: unlimited ? null : limit,
