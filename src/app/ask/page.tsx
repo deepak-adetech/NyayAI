@@ -449,22 +449,6 @@ export default function AskLegalPage() {
       {(quota && !quota.unlimited) || limitReached || history.length > 0 ? (
         <section className="bg-[#f5f5f7] border-t border-[#e0e0e0]">
           <div className="mx-auto max-w-[760px] px-5 sm:px-8 py-12 sm:py-16">
-            {/* Sign-in incentive for guests */}
-            {quota && !quota.unlimited && !isLoggedIn && !limitReached && (
-              <div className="mb-6 rounded-2xl bg-white border border-[#e0e0e0] px-5 py-4 flex items-center justify-between gap-4">
-                <p className="text-[14px] text-[#1d1d1f] leading-snug">
-                  <span className="font-semibold">Sign in free</span> to get {memberLimit} questions a day instead of {dailyLimit}.
-                </p>
-                <Link
-                  href="/login?callbackUrl=/ask"
-                  className="shrink-0 inline-flex items-center gap-1.5 text-[13px] font-medium px-3.5 py-2 rounded-full bg-[#1e3a5f] text-white hover:bg-[#162d4a] active:scale-95 transition-all"
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  Sign in
-                </Link>
-              </div>
-            )}
-
             {/* Quota meter */}
             {quota && !quota.unlimited && !limitReached && (
               <div className="mb-8">
